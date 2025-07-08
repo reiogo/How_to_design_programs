@@ -71,6 +71,23 @@
     ))
 
 
+;wish
+;WorldState Number Number String -> WorldState
+;places the car at the x-coordinate if me is "button-down"
+;given 21 10 20 "enter"
+;wanted 21
+;given 42 10 20 "button-down"
+;wanted 10;
+;given 42 10 20 "move"
+;wanted 42
+(check-expect (hyper 21 10 20 "enter") 21)
+(check-expect (hyper 21 10 20 "button-down") 10)
+(check-expect (hyper 42 10 20 "move") 42)
+
+(define (hyper x-position-of-car x-mouse y-mouse me)
+  (cond
+    [(string=? "button-down" me) x-mouse]
+    [else x-position-of-car]))
 
 ;WorldState -> WorldState
 ;launches the program from some initial state
@@ -78,8 +95,9 @@
   (big-bang ws
     [on-tick tock]
     [to-draw render]
-    [stop-when end?]))
-
+    [stop-when end?]
+    [on-mouse hyper]))
+(main 1)
 
 
 
@@ -91,12 +109,13 @@
 
 ;AnimationState -> Position
 ;convert the time into the position where the car will be placed
+(check-expect (dist 4) 12)
 (define (dist t)
-  (+ t (* 2 ( sin (* t 0.2)))))
+  (* t 3))
 
 ;AnimationState -> AnimationState
 ;simply return how many seconds has passed
-;(check-expect (tock2 2) 3)
+(check-expect (tock2 2) 3)
 (define (tock2 n)
   (+ n 1))
 
@@ -112,5 +131,9 @@
   (big-bang n
     [on-tick tock2]
     [to-draw render2]
+    [on-mouse hyper]
     ))
-(main2 5)
+
+
+
+
