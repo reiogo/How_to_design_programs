@@ -1,0 +1,41 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname graphical-editor) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")) #f)))
+;contants
+(define HEIGHT 200)
+(define WIDTH 20)
+(define F-SIZE 12)
+(define F-COLOR "black")
+(define Y-pos (/ HEIGHT 2))
+
+; graphical
+(define CURSOR
+  (rectangle 1 20 "solid" "red"))
+(define BG
+  (empty-scene HEIGHT WIDTH))
+
+(define-struct editor[pre post])
+; An Editor is a structure:
+; (make-editor String String)
+; interpretation (make-editor s t) means the text in the editor is
+;(string-append s t) with the cursor displayed between s and t
+
+; String String -> Image
+; display the texts
+(define (display s1 s2)
+  (place-image
+   (beside
+    (text "hi" F-SIZE F-COLOR)
+    CURSOR
+    (text "world" F-SIZE F-COLOR)))
+  (/ WIDTH 2) Y-pos
+  BG)
+
+; Editor -> Image
+; show the text and the placement of the cursor
+(check-expect (render (make-editor "hi " "world"))
+              (place-image (text "hi ")
+                           0 0
+                           (empty-scene 100 20)))
+(define (render e)
+  )
