@@ -18,8 +18,8 @@
 (define (body fst lst)
   (string-append
    "We have discovered that all people with the" "\n"
-   "last name " lst " have won our lotter. So, " "\n"
-   fst "," " hurry and pick up your prize."))
+   "last name" lst " have won our lotter. So, " "\n"
+   fst "," "hurry and pick up your prize."))
 (define (closing signature-name)
   (string-append
    "Sincerely,"
