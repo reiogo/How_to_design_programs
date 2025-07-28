@@ -1,0 +1,132 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname traffic-light-simulation) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")) #f)))
+;constants physical
+(define RADIUS 10)
+(define HEIGHT 30)
+(define WIDTH 100)
+(define BG (empty-scene WIDTH HEIGHT))
+(define Y-pos (/ HEIGHT 2))
+;graphical
+(define LIGHT-ONE-POS-X (- (/ WIDTH 3) RADIUS))
+(define LIGHT-TWO-POS-X (/ WIDTH 2))
+(define LIGHT-THREE-POS-X (+ (* (/ WIDTH 3) 2) RADIUS))
+
+;String -> Image
+; create a traffic light that is off
+(check-expect (light-off "red") (circle RADIUS "outline" "red"))
+(define (light-off color)
+  (circle RADIUS "outline" color))
+
+;String -> Image
+; create a light that is on
+(check-expect (light-on "red") (circle RADIUS "solid" "red"))
+(define (light-on color)
+  (circle RADIUS "solid" color))
+
+;Image Number -> Image
+;Place light on background
+(check-expect
+ (add-light (light-on "red") "red" BG)
+ (place-image
+  (light-on "red")
+  LIGHT-ONE-POS-X
+  Y-pos
+  BG))
+(check-expect
+ (add-light (light-on "yellow") "yellow" BG)
+ (place-image
+  (light-on "yellow")
+  LIGHT-TWO-POS-X
+  Y-pos
+  BG))
+(check-expect
+ (add-light (light-on "green") "green" BG)
+ (place-image
+  (light-on "green")
+  LIGHT-THREE-POS-X
+  Y-pos
+  BG))
+(define (add-light light color back)
+  (place-image
+   light
+   (cond
+     [(string=? color "red") LIGHT-ONE-POS-X]
+     [(string=? color "yellow") LIGHT-TWO-POS-X]
+     [(string=? color "green") LIGHT-THREE-POS-X])
+   Y-pos
+   back))
+
+
+
+; TrafficLight -> TrafficLight
+; determines the next state of the traffic light, given current-state
+(check-expect (tl-next "red") "green")
+(check-expect (tl-next "green") "yellow")
+(check-expect (tl-next "yellow") "red")
+(define (tl-next current-state)
+  (cond
+    [(string=? "red" current-state) "green"]
+    [(string=? "green" current-state) "yellow"]
+    [(string=? "yellow" current-state) "red"]))
+
+; TrafficLight -> Image
+; renders the current state of the traffic light as an image
+(check-expect
+ (tl-render "red")
+ (add-light (light-on "red") "red"
+            (add-light (light-off "yellow") "yellow"
+                       (add-light (light-off "green") "green" BG))))
+(check-expect
+ (tl-render "yellow")
+ (add-light (light-on "yellow") "yellow"
+            (add-light (light-off "red") "red"
+                       (add-light (light-off "green") "green" BG))))
+(check-expect
+ (tl-render "green")
+ (add-light (light-on "green") "green"
+            (add-light (light-off "yellow") "yellow"
+                       (add-light (light-off "red") "red" BG))))
+(define (tl-render current-state)
+  (cond [(string=? current-state "red")
+         (add-light (light-on "red") "red"
+                    (add-light (light-off "yellow") "yellow"
+                               (add-light (light-off "green") "green" BG)))]
+        [(string=? current-state "yellow")
+         (add-light (light-on "yellow") "yellow"
+                    (add-light (light-off "red") "red"
+                               (add-light (light-off "green") "green" BG)))]
+        [(string=? current-state "green")
+         (add-light (light-on "green") "green"
+                    (add-light (light-off "yellow") "yellow"
+                               (add-light (light-off "red") "red" BG)))]))
+(tl-render "red")
+; TrafficLight -> TrafficLight
+; simulates a traffic light that changes with each clock tick
+(define (traffic-light-simulation initial-state)
+  (big-bang initial-state
+    [to-draw tl-render]
+    [on-tick tl-next 1]))
+(traffic-light-simulation "red")
+
+
+
+; A N-TrafficLight is one of:
+; – 0
+; – 1
+; – 2
+; interpretation 0 means the traffic light shows red,
+; 1 green, and 2 yellow
+
+; A S-TrafficLight is one of:
+; – RED
+; – GREEN
+; – YELLOW
+(define RED 0)
+(define GREEN 1)
+(define YELLOW 2)
+
+; N-TrafficLight -> N-TrafficLight
+; determines the next state of the traffic light, given current-state
+(define (tl-next-numeric current-state)
+(modulo (+ current-state 1) 3))

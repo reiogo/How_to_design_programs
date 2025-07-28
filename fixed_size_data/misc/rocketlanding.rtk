@@ -1,0 +1,40 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname rocketlanding) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp")) #f)))
+;properties of the world
+(define HEIGHT 400)
+(define WIDTH 100)
+(define ROCKET (overlay (circle 10 "solid" "green")
+                        (rectangle 40 4 "solid" "green")))
+(define V 3)
+
+; graphical constants
+(define ROCKET-CENTER-TOP
+  (- HEIGHT (/ (image-height ROCKET)2)))
+(define X (/ WIDTH 2))
+(define MTSCN (empty-scene WIDTH HEIGHT))
+
+;functions
+(check-expect (create-rocket-scene.v3 3)
+              (place-image ROCKET X (distance 3) MTSCN))
+(check-expect (create-rocket-scene.v3 300)
+              (place-image ROCKET X ROCKET-CENTER-TOP MTSCN))
+
+(define(create-rocket-scene.v3 t)
+  (place-image
+   ROCKET
+   X
+   (cond
+     [(<= (distance t) ROCKET-CENTER-TOP)
+      (distance t)]
+     [else ROCKET-CENTER-TOP])
+     MTSCN))
+
+(define (distance t)
+  (* V t))
+
+; Start the program
+;(animate create-rocket-scene.v3)
+
+
+
