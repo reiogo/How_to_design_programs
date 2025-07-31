@@ -533,11 +533,49 @@
     [(string=? ke " ") (missile-launch s)]
     [else s]))
 
+; A SIGS is one of:
+; - (make-aim UFO TANK)
+; - (make-fired UFO Tank Missile)
+; interpretation represents the state of the space invader game
+
+; Any -> Boolean
+; is a an element of the SIGS collection?
+(check-expect
+ (SIGS?
+  (make-aim
+   (make-posn 4 5)
+   (make-tank 4 5)))
+ #true)
+(check-expect
+ (SIGS?
+  (make-fired
+   (make-posn 4 5)
+   (make-tank 4 5)
+   (make-posn 4 5)))
+ #true)
+(check-expect
+ (SIGS?
+  "hi")
+ #false)
+(check-expect
+ (SIGS?
+  10)
+ #false)
+(check-expect
+ (SIGS?
+  (circle 3 "solid" "red"))
+ #false)
+
+(define (SIGS? a)
+  (cond [(aim? a) #true]
+        [(fired? a) #true]
+        [else #false]))
 
 ; SIGS -> SIGS
 ; start the game from a given state
 (define (si-main s)
   (big-bang s
+    [check-with SIGS?]
     [on-draw si-render]
     [on-tick si-move]
     [on-key si-control]

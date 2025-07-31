@@ -182,6 +182,9 @@
 ; which represents "Hello| world"
 
 
+
+
+
 ; Editor -> Image
 ; display the text and the cursor
 (check-expect (render2 (make-editor2 "Hello world" 5))
@@ -334,10 +337,12 @@
    new
    (string-rest str i)))
 
+
 ; String  -> String
 ; Launch oneline graphical editor
 (define (run2 str)
   (big-bang (make-editor2 str (string-length str))
+    [check-with editor2?]
     [on-draw render2]
     [on-key edit2]))
 

@@ -30,6 +30,8 @@
     [(vcham? a) #true]
     [else #false]))
 
+(define-struct aim [ufo tank])
+(define-struct fired [ufo tank missile])
 (define-struct tank [loc vel])
 ; A SIGS is one of:
 ; - (make-aim UFO TANK)
@@ -65,16 +67,25 @@
  #false)
 
 (define (SIGS? a)
-  (cond []
-        []
-        []))
+  (cond [(aim? a) #true]
+        [(fired? a) #true]
+        [else #false]))
 
 ; A Coordinate is one of:
 ; – a NegativeNumber
-; interpretation a point on the Y axis, distance from top
-
 ; – a PositiveNumber
-; interpretation a point on the X axis, distance from left
-
 ; – a Posn
-; interpretation a point in a scene, usual interpretation
+
+; Any -> Boolean
+; is a an element of the Coordinate collection.
+(check-expect (coordinate? -1) #true)
+(check-expect (coordinate? 1) #true)
+(check-expect (coordinate? (make-posn 1 1)) #true)
+(check-expect (coordinate? "hi") #false)
+(check-expect (coordinate? (empty-scene 100 100)) #false)
+
+(define (coordinate? a)
+  (cond
+    [(number? a) #true]
+    [(posn? a) #true]
+    [else #false]))
