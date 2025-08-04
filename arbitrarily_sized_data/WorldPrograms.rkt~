@@ -1,0 +1,34 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname WorldPrograms) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")) #f)))
+; the following constants descrive distances in terms of pixels
+(define HEIGHT 80)
+(define WIDTH 100)
+(define XSHOTS (/ WIDTH 2))
+
+; graphical constants
+(define BACKGROUND (empty-scene WIDTH HEIGHT))
+(define SHOT (triangle 3 "solid" "red"))
+
+; A List-of-shots is one of:
+; - '()
+; - (cons Shot List-of-shots)
+; interpretation the collection of shots fired
+
+; A Shot is a Number
+; interpretation the number represents the shot's y-coordinate
+
+; A ShotWorld is List-of-Numbers.
+; interpretation each number represents the y-coordinate of a shot
+
+; TO-IMAGE
+; ShotWorld -> Image
+; adds each y on w at (MID, y) to the background image
+(define (to-image w)
+  BACKGROUND)
+
+; TOCK
+; ShotWorld -> ShotWorld
+; moves each shot up by one pixel
+(define (tock w)
+  w)
