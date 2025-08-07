@@ -1,6 +1,7 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-beginner-reader.ss" "lang")((modname ufo-game) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")) #f)))
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ufo-game-v2) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")) #f)))
+
 ; constants
 (define UNIT 1)
 (define HEIGHT (* 300 UNIT))
@@ -8,7 +9,7 @@
 (define BG (empty-scene WIDTH HEIGHT))
 (define TANK-HEIGHT (* UNIT 15))
 (define PROXIMITY (* 15 UNIT))
-(define DELTA-X (* 100 UNIT))
+(define DELTA-X (* 10 UNIT))
 (define UFO-SPEED (* 1 UNIT))
 (define MISSILE-SPEED (- 0 (* 3 UNIT)))
 (define TANK-SPEED (* 5 UNIT))
@@ -277,10 +278,10 @@
 ; Number -> Number
 ; keep the x-coordinates in the correct bounds
 ; examples:
-; to far right
+; too far right
 (check-expect (bounds (+ WIDTH 10))
               WIDTH)
-; to far left
+; too far left
 (check-expect (bounds -3) 0)
 (define (bounds x)
   (cond
@@ -332,24 +333,24 @@
     [(aim? s)
      (make-aim
       (make-posn
-       (+
-        (bounds (posn-x (aim-ufo s)))
-        random)
+       (bounds(+
+               (posn-x (aim-ufo s))
+               random))
        (+
         (posn-y (aim-ufo s))
         UFO-SPEED))
       (make-tank
-       (+
-        (bounds (tank-loc (aim-tank s)))
-        (tank-vel (aim-tank s)))
+       (bounds (+
+                (tank-loc (aim-tank s))
+                (tank-vel (aim-tank s))))
        (tank-vel (aim-tank s)))
       )]
     [(fired? s)
      (make-fired
       (make-posn
        (bounds (+
-        (posn-x (fired-ufo s))
-        random))
+                (posn-x (fired-ufo s))
+                random))
        (+
         (posn-y (fired-ufo s))
         UFO-SPEED))
@@ -368,7 +369,7 @@
 ; Makes the ufo move with random horizontal jumps
 (define (si-move s)
   (si-move-proper s (create-random-number s)))
-  ;(si-move-proper s 0))
+;(si-move-proper s 0))
 
 
 ; SIGS -> Number
@@ -402,7 +403,7 @@
      (cond
        [(= 0
            (modulo (posn-y (fired-ufo w)) UFO-FEINT))
-           (- (random (+ (* DELTA-X 2) 1)) DELTA-X)]
+        (- (random (+ (* DELTA-X 2) 1)) DELTA-X)]
        [else 0])]))
 
 ; SIGS NUMBER -> SIGS
@@ -418,13 +419,13 @@
                (make-tank 42 -3)))
 (check-expect (tank-move
                (make-fired
-                   (make-posn 30 150)
-                   (make-tank 39 -3)
-                   (make-posn 20 56)) 3)
+                (make-posn 30 150)
+                (make-tank 39 -3)
+                (make-posn 20 56)) 3)
               (make-fired
-                   (make-posn 30 150)
-                   (make-tank 42 -3)
-                   (make-posn 20 56)))
+               (make-posn 30 150)
+               (make-tank 42 -3)
+               (make-posn 20 56)))
 ; to the left, aim and fired
 (check-expect (tank-move
                (make-aim
@@ -435,13 +436,13 @@
                (make-tank 36 -3)))
 (check-expect (tank-move
                (make-fired
-                   (make-posn 30 150)
-                   (make-tank 39 -3)
-                   (make-posn 20 56)) -3)
+                (make-posn 30 150)
+                (make-tank 39 -3)
+                (make-posn 20 56)) -3)
               (make-fired
-                   (make-posn 30 150)
-                   (make-tank 36 -3)
-                   (make-posn 20 56)))
+               (make-posn 30 150)
+               (make-tank 36 -3)
+               (make-posn 20 56)))
 (define (tank-move s dist)
   (cond
     [(aim? s) (make-aim
@@ -489,7 +490,7 @@
        (tank-loc (aim-tank s))
        (- HEIGHT TANK-HEIGHT))
       )]
-[(fired? s) s]))
+    [(fired? s) s]))
 
 ; SIGS KeyEvent -> SIGS
 ; KeyEvent is one of:
@@ -499,32 +500,32 @@
 ; examples:
 ; left arrow
 (check-expect (si-control (make-aim
-                  (make-posn 30 150)
-                  (make-tank 39 -3)) "left")
+                           (make-posn 30 150)
+                           (make-tank 39 -3)) "left")
               (tank-move (make-aim
-                  (make-posn 30 150)
-                  (make-tank 39 -3)) (- 0 TANK-SPEED)))
+                          (make-posn 30 150)
+                          (make-tank 39 -3)) (- 0 TANK-SPEED)))
 ; right arrow
 (check-expect (si-control (make-aim
-                  (make-posn 30 150)
-                  (make-tank 39 -3)) "right")
+                           (make-posn 30 150)
+                           (make-tank 39 -3)) "right")
               (tank-move (make-aim
-                  (make-posn 30 150)
-                  (make-tank 39 -3)) TANK-SPEED))
+                          (make-posn 30 150)
+                          (make-tank 39 -3)) TANK-SPEED))
 ; space bar
 (check-expect (si-control (make-aim
-                  (make-posn 30 150)
-                  (make-tank 39 -3)) " ")
+                           (make-posn 30 150)
+                           (make-tank 39 -3)) " ")
               (missile-launch (make-aim
-                  (make-posn 30 150)
-                  (make-tank 39 -3))))
+                               (make-posn 30 150)
+                               (make-tank 39 -3))))
 ; else
 (check-expect (si-control (make-aim
-                  (make-posn 30 150)
-                  (make-tank 39 -3)) "d")
+                           (make-posn 30 150)
+                           (make-tank 39 -3)) "d")
               (make-aim
-                  (make-posn 30 150)
-                  (make-tank 39 -3)))
+               (make-posn 30 150)
+               (make-tank 39 -3)))
 (define (si-control s ke)
   (cond
     [(string=? ke "right") (tank-move s TANK-SPEED)]
@@ -541,8 +542,101 @@
     [on-tick si-move]
     [on-key si-control]
     [stop-when si-game-over? si-render-final]))
-(si-main (make-aim
-          (make-posn 100 0)
-          (make-tank 140 0)))
+;(si-main (make-aim(make-posn 100 0) (make-tank 140 0)))
 
 
+; SIGS.v2 -> Image
+; renders the given game state and added it to BG
+(define (si-render.v2 s)
+  (tank-render (sigs-tank s)
+               (ufo-render (sigs-ufo s)
+                           (missile-render.v2 (sigs-missile s)
+                                              BG))))
+
+(define-struct sigs [ufo tank missile])
+; A SIGS.v2 (short for SIGS version 2) is a structure:
+; (make-sigs UFO Tank MissileOrNot)
+; interpretation represents the state of the space invader game
+
+; A MissileOrNot is one of:
+; – #false
+; – Posn
+; interpretation #false means the missile hasn't been fired yet;
+; Posn says the missile has been fired and is at the specified location.
+
+; MissileOrNot Image -> Image
+; adds the missile image to sc for m
+(check-expect (missile-render.v2 #false BG)
+              BG)
+(check-expect
+ (missile-render.v2
+  (make-posn 32 (- HEIGHT TANK-HEIGHT 10)) BG)
+ (place-image
+  MISSILE-IMG
+  32 (- HEIGHT TANK-HEIGHT 10)
+  BG))
+(define (missile-render.v2 m scene)
+  (cond
+    [(boolean? m) scene]
+    [(posn? m) (place-image MISSILE-IMG (posn-x m) (posn-y m) scene)]))
+
+
+; SIGS.v2 Number -> SIGS.v2
+; move UFO by a given amount
+(check-expect (move-ufo (make-sigs
+   (make-posn 34 4)
+   (make-tank 15 -3)
+   #false) 3)
+              (make-sigs
+   (make-posn 37 4)
+   (make-tank 15 -3)
+   #false)
+              (
+(define (move-ufo s d)
+  (cond [(boolean?]
+        []
+        )
+
+; SIGS.v2 -> SIGS.v2
+; move all the objects according to their velocities.
+; missileornot is false
+(check-expect
+ (si-move.v2
+  (make-sigs
+   (make-posn 34 4)
+   (make-tank 15 -3)
+   #false))
+ (make-sigs
+  (make-posn 34 (+ 4 UFO-SPEED))
+  (make-tank (+ 15 -3) -3)
+  #false))
+; missileornot is posn
+(check-expect
+ (si-move.v2
+  (make-sigs
+   (make-posn 34 4)
+   (make-tank 15 -3)
+   (make-posn 25 49)))
+ (make-sigs
+  (make-posn 34 (+ 4 UFO-SPEED))
+  (make-tank (+ 15 -3) -3)
+  (make-posn (+ 25 MISSILE-SPEED) 49))
+ (define (si-move.v2 s)
+   (cond
+     [(boolean? s)
+      (make-sigs
+       (move-ufo s UFO-SPEED)
+       (move-tank s)
+       #false)]
+     [(posn? s)
+      (make-sigs
+       (move-ufo s UFO-SPEED)
+       (move-tank s)
+       (move-missile s MISSILE-SPEED))]))
+
+
+
+
+
+
+ 

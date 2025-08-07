@@ -1,0 +1,16 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname zoo_structs) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")) #f)))
+(define-struct spiders [legs space])
+; Spiders is a structure:
+; (make-spiders Number Size)
+; interpretation (make-spiders n s)
+; n is the number of remaining legs
+; s is a Size of the spiders cage for transportation
+
+; Size is one of:
+; - s for small
+; - m for mid
+; - l for large
+; interpretation: the relative size of a cage
+

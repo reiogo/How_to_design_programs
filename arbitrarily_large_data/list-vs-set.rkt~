@@ -1,0 +1,17 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname list-vs-set) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")) #f)))
+; List-of-string String -> N
+; determine how often s occurs in los
+(check-expect (count '() "hi") 0)
+(check-expect (count (cons "hi" '()) "hi") 1)
+(check-expect (count (cons "hi" '()) "he") 0)
+(check-expect (count (cons "he" (cons "hi" '())) "hi") 1)
+(check-expect (count (cons "ih" (cons "hi" '())) "he") 0)
+(define (count los s)
+  (cond
+    [(empty? los) 0]
+    [(cons? los)
+     (if (string=? (first los) s)
+         (add1 (count (rest los) s))
+         (count (rest los) s))]))
