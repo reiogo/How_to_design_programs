@@ -1,0 +1,27 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname Fixing:optimizing_dicts) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")) #f)))
+; LLoS -> letter-counts
+; Find the list with the most entries
+
+(check-expect
+ (max-dict
+  (list
+   (list "apple" "adonis")
+   (list "be")))
+ (list "apple" "adonis"))
+
+(check-expect
+ (max-dict
+  (list '()))
+ '())
+
+(define (max-dict allos)
+  (cond
+    [(empty? (rest allos)) '()]
+    [else
+     (if
+      (> (length (first allos))
+         (length (max-dict (rest allos))))
+      (first allos)
+      (max-dict (rest allos)))]))
