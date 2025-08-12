@@ -1,6 +1,6 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname dictionaries) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")) #f)))
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname Fixed_Dictionary) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")) #f)))
 ; DICTIONARIES
 (define DICTIONARY-LOCATION "/usr/share/dict/words")
 
@@ -107,54 +107,6 @@
       (count l (substring s 1 (string-length s))))]))
 
 
-; (count-by-letter LETTERS DICTIONARY-AS-LIST)
-
-; Dictionary -> Letter-Count
-; Find the most frequently used
-; first letter of a word in a given dictionary
-
-;(check-expect
-; (most-frequent
-;  (list "apple" "bee" "atomic"))
-; (make-letter-counts "e" 3))
-;
-;(check-expect
-; (most-frequent
-;  '())
-; (make-letter-counts "" 0))
-;
-;(define (most-frequent d)
-;  (max-frequent (count-by-letter LETTERS d)))
-
-; List-of-letter-counts -> letter-counts
-; Finds the letter-count with the largest frequency
-
-;(check-expect
-; (max-frequent
-;  (list
-;   (make-letter-counts "a" 0)
-;   (make-letter-counts "b" 2)
-;   (make-letter-counts "c" 3)))
-; (make-letter-counts "c" 3))
-;
-;(check-expect
-; (max-frequent
-;  '())
-; (make-letter-counts "" 0))
-; 
-;(define (max-frequent lolc)
-;  (cond
-;    [(empty? lolc) (make-letter-counts "" 0)]
-;    [else
-;     (if 
-;      (>
-;       (letter-counts-n (first lolc))
-;       (letter-counts-n (max-frequent (rest lolc))))
-;      (first lolc) (max-frequent (rest lolc)))]))
-
-
-
-
 ; Dictionary -> Letter-Count
 ; Find the most frequently used
 ; first letter of a word in a given dictionary
@@ -167,7 +119,7 @@
 (check-expect
  (most-frequent
   '())
- (make-letter-counts "" 0))
+ (make-letter-counts "z" 0))
 
 (define (most-frequent d)
   (max-frequent (letter-first LETTERS d)))
@@ -245,11 +197,47 @@
   (cond
     [(empty? lolc) (make-letter-counts "" 0)]
     [else
-     (if 
-      (>
-       (letter-counts-n (first lolc))
-       (letter-counts-n (max-frequent (rest lolc))))
-      (first lolc) (max-frequent (rest lolc)))]))
+     (if
+      (greatest-letter-counts (first lolc) (rest lolc))
+      (first lolc)
+      (max-frequent (rest lolc)))]))
+
+; letter-counts list-of-letter-counts -> boolean
+; check if alc is the greatest in alolc
+
+(check-expect
+ (greatest-letter-counts
+  (make-letter-counts "a" 1)
+  (list
+   (make-letter-counts "b" 3)
+   (make-letter-counts "c" 5)
+   (make-letter-counts "d" 0)))
+ #false)
+
+(check-expect
+ (greatest-letter-counts
+  (make-letter-counts "a" 6)
+  (list
+   (make-letter-counts "b" 3)
+   (make-letter-counts "c" 5)
+   (make-letter-counts "d" 0)))
+ #true)
+
+(check-expect
+ (greatest-letter-counts
+  (make-letter-counts "a" 6)
+  '())
+ #true)
+
+(define (greatest-letter-counts alc alolc)
+  (cond
+    [(empty? alolc) #true]
+    [else
+     (and
+      (> (letter-counts-n alc) (letter-counts-n (first alolc)))
+      (greatest-letter-counts alc (rest alolc)))]))
+
+
 
 
 ; List-of-letters Dictionary -> list-of-dictionaries
@@ -347,10 +335,46 @@
     [(empty? (rest allos)) '()]
     [else
      (if
-      (> (length (first allos))
-         (length (max-dict (rest allos))))
+      (greatest? (first allos) (rest allos))
       (first allos)
       (max-dict (rest allos)))]))
+
+; Los LLoS -> boolean
+; Checks if alos is the greatest in allos
+
+(check-expect
+ (greatest? (list "apple" "adonis")
+            (list
+             (list "be")
+             (list "c")))
+ #true)
+
+(check-expect
+ (greatest? (list "apple" "adonis")
+            (list
+             (list "be")
+             (list "c" "cat" "chamber")))
+ #false)
+
+(check-expect
+ (greatest? (list "apple" "adonis")
+            (list
+             (list "be")
+             (list "cat")))
+ #true)
+
+(check-expect
+ (greatest? (list "apple" "adonis")
+            '())
+#true)
+
+(define (greatest? alos allos)
+  (cond
+    [(empty? allos) #true]
+    [else
+     (and
+      (> (length alos) (length (first allos)))
+      (greatest? alos (rest allos)))]))
 
 ; List-of-strings -> letter-counts
 ; Find the letter-counts of a list of strings that all start with the same

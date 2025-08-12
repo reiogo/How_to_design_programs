@@ -1,0 +1,100 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname word_games) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp") (lib "itunes.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp") (lib "itunes.rkt" "teachpack" "2htdp")) #f)))
+; Word Games
+
+; String -> List-of-strings
+; find all words that the letters of some given word spell
+
+(check-member-of (alternative-words "cat")
+                 (list "act" "cat")
+                 (list "cat" "act"))
+
+(define (all-words-from-rat? w)
+  (and
+   (member? "rat" w)
+   (member? "art" w)
+   (member? "tar" w)))
+
+(check-satisfied (alternative-words "rat") all-words-from-rat?)
+
+
+(define (alternative-words s)
+  (in-dictionary (words->strings (arrangements (string->word s)))))
+
+
+;List-of-strings -> List-of-strings
+; pick out all thsoe Strings that occur in the dictionary
+(define (in-dictionary los)
+  empty)
+
+; A Word is ...
+
+; A List-of-words is...
+
+; Word -> List-of-words
+; find all re-arrangements of word
+(define (arrangements word)
+  (list word))
+
+
+; String -> Word
+; convert s to the chosen word representation
+
+(check-expect
+ (string->word "hi")
+ (cons "h" (cons "i" '())))
+
+(check-expect
+ (string->word "")
+ '())
+
+(define (string->word s)
+  (cond
+    [(string=? "" s) '()]
+    [else
+     (cons
+      (substring s 0 1)
+      (string->word (substring s 1 (string-length s))))]))
+
+; Word -> String
+; convert w to a string
+
+(check-expect
+ (word->string (list "h" "i"))
+ "hi")
+
+(check-expect
+ (word->string '())
+ "")
+
+
+(define (word->string w)
+  (cond
+    [(empty? w) ""]
+    [else
+     (string-append
+      (first w)
+      (word->string (rest w)))]))
+
+; List-of-words -> List-of-strings
+; Turn all words in alow into strings
+
+(check-expect
+ (words->strings
+  (list (list "h" "i") (list "w" "o" "w")))
+ (list "hi" "wow"))
+
+(check-expect
+ (words->strings
+  '())
+ '())
+
+(define (words->strings alow)
+  (cond
+    [(empty? alow) '()]
+    [else
+     (cons
+      (word->string (first alow))
+      (words->strings (rest alow)))]))
+
