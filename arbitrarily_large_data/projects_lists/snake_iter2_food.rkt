@@ -417,6 +417,25 @@
     [stop-when end? end]))
 (main (list (make-segment 5 4 "d")))
 
+(define-struct ws [snake food])
+; WorldState is a structure:
+; (make-ws Snake Posn)
+; interpretation (make-ws s p)
+; s is the snake, p is the posn of the food
+
+; WorldState -> Image
+; Render the world using ws
+(define (render-sf ws)
+  (empty-scene 10 10))
+
+; WorldState -> WorldState
+; Change the state every second
+(define (tock-sf ws)
+  ws)
+
+; MAIN-FOOD
+
+
 
 
 
