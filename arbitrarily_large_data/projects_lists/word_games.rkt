@@ -74,9 +74,21 @@
           #true
           (string-in-dict? s (rest d)))]))
 
-; A Word is ...
+; A Word is one of:
+; - '() or
+; - (cons 1String Word)
+; interpretation a String as a list of single Strings (letters)
 
-; A List-of-words is...
+(define w1 (list "h" "i"))
+(define w2 (list "w" "h" "o"))
+
+
+; A List-of-words is one of:
+; - '() or
+; - (cons word List-of-words)
+; interpretation a list of words
+
+(define l1 (list w1 w2))
 
 ; Word -> List-of-words
 ; find all re-arrangements of word
@@ -88,9 +100,123 @@
   (list "w" "h")
   (list "h" "w")))
 
-(define (arrangements word)
-  (list "h"))
+(check-expect
+ (arrangements w1)
+ (list
+  (list "h" "i")
+  (list "i" "h")))
 
+(check-expect
+ (arrangements '())
+ (list '()))
+
+(define (arrangements w)
+  (cond
+    [(empty? w) (list '())]
+    [else
+     (insert-everywhere/in-all-words (first w)
+                                     (arrangements (rest w)))]))
+
+
+; 1String List-of-words -> List-of-words
+; insert character into every position of all words in alow
+
+(check-expect
+ (insert-everywhere/in-all-words
+  "d"
+  (cons (list "e" "r")
+        (cons (list "r" "e") '())))
+ (list
+  (list "d" "e" "r")
+  (list "e" "d" "r")
+  (list "e" "r" "d")
+  (list "d" "r" "e")
+  (list "r" "d" "e")
+  (list "r" "e" "d")))
+
+(check-expect
+ (insert-everywhere/in-all-words
+  "d" '())
+ '())
+
+(check-expect
+ (insert-everywhere/in-all-words
+  "d" (list (list "h")))
+ (list
+  (list "d" "h")
+  (list "h" "d")))
+
+(define (insert-everywhere/in-all-words s alow)
+  (cond
+    [(empty? alow) '()]
+    [else
+     (append
+      (insert-everywhere s (first alow))
+      (insert-everywhere/in-all-words s (rest alow)))]))
+
+; 1String Word -> List-of-words
+; insert s into every position of aw
+
+(check-expect
+ (insert-everywhere "e" (list "s" "h" "i"))
+ (list
+  (list "e" "s" "h" "i")
+  (list "s" "e" "h" "i")
+  (list "s" "h" "e" "i")
+  (list "s" "h" "i" "e")))
+
+(check-expect
+ (insert-everywhere "s" (list "h" "i"))
+ (list
+  (list "s" "h" "i")
+  (list "h" "s" "i")
+  (list "h" "i" "s")))
+
+(check-expect
+ (insert-everywhere "s" (list "i"))
+ (list
+  (list "s" "i")
+  (list "i" "s")))
+
+(check-expect
+ (insert-everywhere "s" '())
+ (list (list "s")))
+
+(define (insert-everywhere s aw)
+  (cond
+    [(empty? aw) (list (list s))]
+    [else
+     (cons
+      (cons s aw)
+      (append-all (first aw)
+                  (insert-everywhere s (rest aw))))]
+    ))
+
+; 1String List-of-words -> List-of-words
+; Add s to the start of every word in alow
+
+(check-expect
+ (append-all "s" (list (list "a" "b") (list "c" "d")))
+ (list
+  (list "s" "a" "b")
+  (list "s" "c" "d")))
+
+(check-expect
+ (append-all "s" (list (list "w")))
+ (list (list "s" "w")))
+
+(check-expect
+ (append-all "s" '())
+ '())
+
+(define (append-all s alow)
+  (cond
+    [(empty? alow) '()]
+    [else
+     (cons
+      (cons s (first alow))
+      (append-all s (rest alow)))]
+    ))
 
 ; String -> Word
 ; convert s to the chosen word representation
