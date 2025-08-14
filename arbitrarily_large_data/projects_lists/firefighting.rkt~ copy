@@ -1,0 +1,38 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname firefighting) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp") (lib "itunes.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp") (lib "itunes.rkt" "teachpack" "2htdp")) #f)))
+; FIRE-FIGHTING
+
+; PHYSICAL CONSTRAINTS
+
+(define UNIT 10)
+
+(define WIDTH 20)
+
+(define HEIGHT 40)
+
+; GRAPHICAL CONSTRAINTS
+
+(define BG
+  (empty-scene
+  (* WIDTH UNIT) (* HEIGHT UNIT)))
+
+(define FIRE
+  (circle UNIT "solid" "red"))
+
+(define WATER
+  (circle UNIT "solid" "blue"))
+(define PLANE
+  (overlay/align
+   "middle" "bottom"
+   (ellipse (* 1 UNIT) (* 0.3 UNIT) "solid" "black")
+  (overlay/align
+   "middle" "middle"
+   (ellipse (* 2.3 UNIT) (* 0.6 UNIT) "solid" "black")
+   (ellipse (* 0.6 UNIT) (* 1.7 UNIT) "solid" "black"))))
+
+PLANE
+
+; DATA DEFINITION
+
+; FUNCTIONS
