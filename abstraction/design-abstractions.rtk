@@ -1,0 +1,227 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-reader.ss" "lang")((modname design-abstractions) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "batch-io.rkt" "teachpack" "2htdp") (lib "web-io.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "batch-io.rkt" "teachpack" "2htdp") (lib "web-io.rkt" "teachpack" "2htdp")) #f)))
+; Design abstractions
+
+(define (tab-sin n)
+  (cond
+    [(= n 0) (list (sin 0))]
+    [else
+     (cons (sin n)
+           (tab-sin (sub1 n)))]))
+
+(define (tab-sqrt n)
+  (cond
+    [(= n 0) (list (sqrt 0))]
+    [else
+     (cons (sqrt n)
+           (tab-sqrt (sub1 n)))]))
+
+; Number [Number -> Number] -> [List-of Number]
+; tabulates f of n between n and 0 (inclusive)
+; in a list
+
+(check-within
+ (tab-f sin 4)
+ (tab-sin 4) 0.001)
+
+(check-within
+ (tab-f sqrt 4)
+ (tab-sqrt 4) 0.001)
+
+(define (tab-f f n)
+  (cond
+    [(= n 0) (list (f 0))]
+    [else
+     (cons (f n)
+           (tab-f f (sub1 n)))]))
+
+; Number -> [List-of Number]
+; tabulate sqr of n between n and 0 inclusive in a list
+
+(check-expect
+ (tab-sqr 3)
+ '(9 4 1 0))
+
+(define (tab-sqr n)
+  (tab-f sqr n))
+
+; Number -> [List-of Number]
+; tabulate tan between n and 0 inclusive in a list
+
+(check-within
+ (tab-tan 2)
+ (list (tan 2) (tan 1) (tan 0)) 0.001)
+
+(define (tab-tan n)
+  (tab-f tan n))
+
+; [List-of Number] -> Number
+; computes the sum of the numbers on l
+(define (sum l)
+  (cond
+    [(empty? l) 0]
+    [else
+     (+ (first l)
+        (sum (rest l)))]))
+
+; [List-of Number] -> Number
+; computes the product of the numbers on l
+(define (product l)
+  (cond
+    [(empty? l) 1]
+    [else
+     (* (first l)
+        (product (rest l)))]))
+
+; [List-of Number] -> Number
+; computes f with the first and
+; result of fold on the rest of l
+; at-end is what the end of l should result in
+
+(check-expect
+ (fold1 * 1 '( 3 4 5))
+ (product '(3 4 5)))
+
+(check-expect
+ (fold1 + 0 '( 1 2 23 4))
+ (sum '( 1 2 23 4)))
+
+(define (fold1 f at-end l)
+  (cond
+    [(empty? l) at-end]
+    [else
+     (f (first l)
+        (fold1 f at-end (rest l)))]))
+
+; [List-of Posn] -> Image
+(define (image* l)
+  (cond
+    [(empty? l) emt]
+    [else
+     (place-dot (first l)
+                (image* (rest l)))]))
+
+; Posn Image -> Image
+(define (place-dot p img)
+  (place-image dot
+               (posn-x p) (posn-y p)
+               img))
+
+; graphical constant:
+(define emt (empty-scene 100 100))
+(define dot (circle 3 "solid" "red"))
+
+; [List-of ITEM] -> [ITEM]
+; computes f of the first item with the result
+; of the function on the rest of the items of the list
+
+(check-expect
+ (fold2 place-dot emt `(,(make-posn 3 4) ,(make-posn 4 5)))
+ (image* `(,(make-posn 3 4) ,(make-posn 4 5))))
+
+(define (fold2 f at-end l)
+  (cond
+    [(empty? l) at-end]
+    [else
+     (f (first l)
+        (fold2 f at-end (rest l)))]))
+
+; List-of-numbers -> List-of-numbers
+; Inventory -> List-of-strings
+
+; [List-of X] [X -> Y] -> [List-of Y]
+
+(define (map1 k g)
+  (cond
+    [(empty? k) '()]
+    [else
+     (cons (g (first k))
+           (map1 (rest k) g))]))
+
+; [List-of Number] -> Number
+; [List-of Posn] -> Image
+
+; [List-of Number] Number [Number Number -> Number] -> Number
+; [List-of Posn] Image [Posn Image -> Image] -> Image
+
+; [List-of X] Y [X Y -> Y] -> Y
+
+; [Number -> Boolean]
+; zero?
+; [Boolean String -> Boolean]
+; 
+; [Number Number Number -> Number]
+; +
+; [Number -> [List-of Number]
+; list
+; [[List-of Number] -> Boolean]
+; empty?
+
+; sort-n
+; [List-of Number] [Number Number -> Boolean] -> [List-of Number]
+
+; sort-s
+; [List-of String] [String String -> Boolean] -> [List-of String]
+
+; sort-abs
+; [List-of X] [ X X -> Boolean] -> [List-of X]
+
+; sort-ir
+; [List-of IR] [ IR IR -> Boolean] -> [List-of IR]
+
+; map-n
+; [List-of Number] [Number -> Number] -> [List-of Number]
+
+; map-s
+; [List-of String] [String -> String] -> [List-of String]
+
+; map-abs
+; [List-of X] [X -> X] -> [List-of X]
+
+; map-ir
+; [List-of IR] [IR -> IR] -> [List-of IR]
+
+; [List-of X] Y [X Y -> Y] -> Y
+(define (reduce l base combine)
+  (cond
+    [(empty? l) base]
+    [else (combine (first l)
+                   (reduce (rest l) base combine))]))
+
+; [List-of Number] -> Number
+(define (sum2 lon)
+  (reduce lon 0 +))
+
+; [List-of Number] -> Number
+(define (product2 lon)
+  (reduce lon 1 *))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

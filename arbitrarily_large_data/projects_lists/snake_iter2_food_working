@@ -17,7 +17,9 @@
 
 (define FOOD
   (circle DIAM "solid" "green"))
-
+; A [List-of [Maybe String]] is one of:
+; - '()
+; - (cons [Maybe String] [List-of [Maybe String])
 
 (define-struct segment [from-left from-top direction])
 ; segment is a structure:
