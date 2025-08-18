@@ -1,0 +1,22 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname abstraction-examples) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp") (lib "itunes.rkt" "teachpack" "2htdp") (lib "web-io.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp") (lib "itunes.rkt" "teachpack" "2htdp") (lib "web-io.rkt" "teachpack" "2htdp")) #f)))
+((local ((define (f x) (+ x 3))
+         (define (g x) (* x 4)))
+   (if (odd? (f (g 1)))
+       f
+       g))
+ 2)
+
+; ADD-3-TO-ALL
+; [List-of Posn] -> [List-of Posn]
+; add 3 to the x-coord of each in lop
+
+(check-expect
+ (add-3-to-all (list (make-posn 3 5) (make-posn 5 6)))
+ (list (make-posn 6 5) (make-posn 8 6)))
+
+(define (add-3-to-all lop)
+  lop)
+
+;[X->Y

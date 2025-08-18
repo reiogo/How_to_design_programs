@@ -26,7 +26,7 @@
         [(> (first l) largest-in-rest) (first l)]
         [else largest-in-rest]))]))
 
-((local ((define (f x) (+ (* 4 (sqr x)) 3 ))) f) 1)a
+((local ((define (f x) (+ (* 4 (sqr x)) 3 ))) f) 1)
 
 ;(define (f-l x) (+ (* 4 (sqr x)) 3))
 ;(f-l 1)
