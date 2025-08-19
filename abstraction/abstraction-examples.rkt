@@ -17,6 +17,88 @@
  (list (make-posn 6 5) (make-posn 8 6)))
 
 (define (add-3-to-all lop)
-  lop)
+  (local (; Posn -> Posn
+          ; adds 3 to the x-coord of the given Posn
+          (define (add-3-to-one p)
+            (make-posn (+ 3 (posn-x p)) (posn-y p))))
+    (map add-3-to-one lop)))
 
-;[X->Y
+;[X->Y] [List-of X] -> [List-of Y]
+
+; [List-of Posn] -> [List-of Posn]
+; removes posns with y-coord greater than 100
+
+(check-expect
+ (keep-good (list (make-posn 2 3) (make-posn 3 102)))
+ (list (make-posn 2 3)))
+
+(define (keep-good lop)
+  (local (; Posn -> Boolean
+          ; if p is less than 100
+          (define (p<100? p)
+          (< (posn-y p) 100)))
+    (filter p<100? lop)))
+
+; ormap
+; [ X -> Boolean] [List-of X] -> Boolean
+
+; Posn Posn Number -> Boolean
+; is the distance between p and q less than d
+
+(check-expect
+ (close-to (make-posn 1 5) (make-posn 1 2) 10)
+ #true)
+
+(check-expect
+ (close-to (make-posn 9 9) (make-posn 1 2) 1)
+ #false)
+
+(define (close-to p q d)
+  (if
+   (<= (sqrt (+ (sqr (- (posn-x p)(posn-x q)))
+        (sqr (- (posn-y p)(posn-y q))))) d)
+   #true
+   #false))
+
+; [List-of Posn] Posn -> Boolean
+; is any Posn on lop close to pt
+
+(check-expect
+ (close? (list (make-posn 47 54) (make-posn 0 60))
+         (make-posn 50 50))
+ #true)
+
+(define (close? lop pt)
+  (local (; Posn -> Boolean
+          ; is one shot close to pt
+          (define (is-one-close? p)
+            (close-to p pt CLOSENESS)))
+    (ormap is-one-close? lop)))
+
+(define CLOSENESS 5) ; in terms of pixels
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
