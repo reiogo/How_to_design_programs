@@ -186,20 +186,20 @@
 
 (check-expect
  (eliminate-exp-l 4
-                (list
-                 (make-ir "hi" "hi" 10 4)
-                 (make-ir "hi" "hi" 13 5)
-                 (make-ir "hi" "hi" 10 1)))
+                  (list
+                   (make-ir "hi" "hi" 10 4)
+                   (make-ir "hi" "hi" 13 5)
+                   (make-ir "hi" "hi" 10 1)))
  (list
   (make-ir "hi" "hi" 10 4)
   (make-ir "hi" "hi" 13 5)))
 
 (check-expect
  (eliminate-exp-l 0
-                (list
-                 (make-ir "hi" "hi" 10 4)
-                 (make-ir "hi" "hi" 13 5)
-                 (make-ir "hi" "hi" 10 1)))
+                  (list
+                   (make-ir "hi" "hi" 10 4)
+                   (make-ir "hi" "hi" 13 5)
+                   (make-ir "hi" "hi" 10 1)))
  (list
   (make-ir "hi" "hi" 10 4)
   (make-ir "hi" "hi" 13 5)
@@ -237,17 +237,17 @@
 
 (check-expect
  (recall-l "hi"
-         (list
-          (make-ir "hi" "ie" 10 4)
-          (make-ir "hi" "hi" 13 5)
-          (make-ir "hi" "hi" 10 1)))
+           (list
+            (make-ir "hi" "ie" 10 4)
+            (make-ir "hi" "hi" 13 5)
+            (make-ir "hi" "hi" 10 1)))
  '())
 (check-expect
  (recall-l "hi"
-         (list
-          (make-ir "hi" "ie" 10 4)
-          (make-ir "i" "hi" 13 5)
-          (make-ir "hi" "hi" 10 1)))
+           (list
+            (make-ir "hi" "ie" 10 4)
+            (make-ir "i" "hi" 13 5)
+            (make-ir "hi" "hi" 10 1)))
  (list
   (make-ir "i" "hi" 13 5)))
 
@@ -290,6 +290,13 @@
 (define (create-list n)
   (build-list n identity))
 
+(check-expect
+ (create-list-l 2)
+ '(0 1))
+
+(define (create-list-l n)
+  (build-list n (lambda (x) x)))
+
 ; Number -> [List-of Number]
 ; create a list of number from 1 to n
 
@@ -299,6 +306,13 @@
 
 (define (create-list-from-1 n)
   (build-list n add1))
+
+(check-expect
+ (create-list-from-1-l 2)
+ '(1 2))
+
+(define (create-list-from-1-l n)
+  (build-list n (lambda (x) (+ x 1))))
 
 ; Number -> [List-of Number]
 ; create a list of numbers where each number is divide by 10 of the prev
@@ -313,6 +327,13 @@
           (define (div10 n0)
             (/ 1 (expt 10 n0))))
     (build-list n div10)))
+
+(check-expect
+ (div10-list-l 3)
+ '( 1 1/10 1/100))
+
+(define (div10-list-l n)
+  (build-list n (lambda (n0) (/ 1 (expt 10 n0)))))
 
 ; Number -> [List-of Number]
 ; creates list of first n even numbers
@@ -331,6 +352,16 @@
             (* n0 2))
           )
     (build-list n even-ify)))
+
+(check-expect
+ (even-list-l 3)
+ '(0 2 4))
+(check-expect
+ (even-list-l 6)
+ '(0 2 4 6 8 10))
+
+(define (even-list-l n)
+  (build-list n (lambda (n0) (* n0 2))))
 
 ; Number -> [List-of [List-of 1or0]]
 ; make an identity matrix where the row/column value is n
@@ -365,8 +396,28 @@
           ; create a list of 1 and 0s where 1 is at the nth place
           (define (make-zero-list n0)
             (toggle-zero n0 (build-list n identity)))
-            )
-          (build-list n make-zero-list)))
+          )
+    (build-list n make-zero-list)))
+
+(check-expect
+ (iden-matrix-l 1)
+ '((1)))
+
+(check-expect
+ (iden-matrix-l 2)
+ '((1 0) (0 1)))
+
+(check-expect
+ (iden-matrix-l 3)
+ '((1 0 0) (0 1 0) (0 0 1)))
+
+(define (iden-matrix-l n)
+  (build-list
+   n
+   (lambda (n0)
+     (build-list
+      n
+      (lambda (n1) (if (= n1 n0) 1 0))))))
 
 ; Number -> [List-of Number]
 ; tabulate f between n and 0 in a list
@@ -381,8 +432,124 @@
 (define (tabulate f n)
   (build-list n f))
 
+; String [List-of String] -> Boolean
+; checks whether name is an element on lonames or an extension of it.
+
+(check-expect
+ (find-name "hi"
+            '( "hi" "Hello"))
+ #true)
+
+(check-expect
+ (find-name "hi"
+            '( "hii" "Hello"))
+ #true)
+
+(check-expect
+ (find-name "hi"
+            '("Hello"))
+ #false)
+
+; String String -> Boolean
+; check if s1 is an extension of s0
+
+(check-expect
+ (extension? "hi" "hii")
+ #true)
+
+(check-expect
+ (extension? "hi" "hi")
+ #true)
+
+(check-expect
+ (extension? "hi" "h")
+ #false)
 
 
+(define (extension? s0 s1)
+  (cond [(string=? "" s0) #true]
+        [(string=? "" s1) #false]
+        [else
+         (and
+          (string=? (substring s0 0 1)(substring s1 0 1))
+          (extension?
+           (substring s0 1 (string-length s0))
+           (substring s1 1 (string-length s1))))]))
+
+
+(define (find-name name lonames)
+  (local (; String -> Boolean
+          ; true if s is an extension of name
+          (define (valid-name? s)
+            (cond
+              [(extension? name s) #true]
+              [else #false]))
+          )
+    (ormap valid-name? lonames)))
+
+(check-expect
+ (find-name-l "hi"
+            '( "hi" "Hello"))
+ #true)
+
+(check-expect
+ (find-name-l "hi"
+            '( "hii" "Hello"))
+ #true)
+
+(check-expect
+ (find-name-l "hi"
+            '("Hello"))
+ #false)
+
+
+(define (find-name-l name lonames)
+  (ormap (lambda (s) (if (extension? name s) #true #false)) lonames))
+
+
+
+; [List-of String] -> Boolean
+; Check that all the names start with a
+
+(check-expect
+ (all-a '("addis" "addidas"))
+ #true)
+
+(check-expect
+ (all-a '("daddis" "addidas"))
+ #f)
+
+(define (all-a los)
+  (local (; String -> Boolean
+          ; Check if string starts with "a"
+          (define (one-a s)
+            (string=?
+             "a"
+             (substring s 0 1)))
+          )
+    (andmap one-a los)))
+
+(check-expect
+ (all-a-l '("addis" "addidas"))
+ #true)
+
+(check-expect
+ (all-a-l '("daddis" "addidas"))
+ #f)
+
+(define (all-a-l los)
+  (andmap (lambda (s) (string=? "a" (substring s 0 1))) los))
+
+(check-expect
+ (append-from-fold '(1 2 3) '(4 5 6 7))
+ '(1 2 3 4 5 6 7))
+
+(check-expect
+ (append-from-fold '(1 2 ) '(4 5 6 7))
+ '(1 2 4 5 6 7))
+
+(define (append-from-fold lox loy)
+  (foldr cons loy lox))
 
 
 
