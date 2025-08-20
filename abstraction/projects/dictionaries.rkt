@@ -17,23 +17,42 @@
 
 (check-expect
  (most-frequent
-  '())
- (make-letter-counts "" 0))
+  (list "apple" "bee" "atomic" "bean" "burrow"))
+ (make-letter-counts "b" 3))
+
+(check-expect
+ (letter-counts-n (most-frequent
+  '()))
+ 0)
 
 (define (most-frequent dict)
   (local (; [List-of String] -> [List-of letter-counts]
           ; find the frequency of letters as the first element
-          (define (letter-first-inner dict)
-            '())
+          (define (letter-first-inner letters)
+            (cond
+              [(empty? letters) '()]
+              [else
+               (cons
+                (make-letter-counts
+                 (first letters)
+                 (local (; String Number -> Number
+                         ; add to n if string starts with certain letter
+                         (define (add-if-letter s0 n0)
+                           (if (string=? (substring s0 0 1) (first letters))
+                               (add1 n0)
+                               n0)))
+                 (foldr add-if-letter 0 dict))
+                 )
+                (letter-first-inner (rest letters)))]))
           ; Letter-count Letter-count -> Boolean
           ; whether lc0 is greater than lc1
           (define (greater? lc0 lc1)
-            (> (letter-counts-n lc0) (letter-counts-n lc1))
+            (> (letter-counts-n lc0) (letter-counts-n lc1)))
           ; [List-of letter-counts] -> letter-counts
           (define (max-frequent-inner lolc)
-            (first (sort lolc greater?))
-          )
-    (max-frequent-inner (letter-first-inner dict))))
+            (first (sort lolc greater?))))
+    ; -- IN --
+    (max-frequent-inner (letter-first-inner LETTERS))))
 
 ; LETTER-FIRST ===============================================
 ; List-of-letters Dictionary -> List-of-letter-counts
@@ -76,4 +95,90 @@
          (letter-counts-n (count-first l (rest d)))))]))
 
 
-; WORD-BY-FIRST-LETTER
+; WORD-BY-FIRST-LETTER ===============================================
+; List-of-letters Dictionary -> list-of-dictionaries
+; Creates a list of dictionaries for each letter
+; where the word starts with the given letter
+
+(check-expect
+ (words-by-first-letter (list "a" "b" "c")
+                        (list "apple" "bee" "crampon"))
+ (list
+  (list "apple")
+  (list "bee")
+  (list "crampon")))
+
+(check-expect
+ (words-by-first-letter
+  (list "a" "b" "c")
+  (list "apple" "atomic" "bee" "crampon"))
+ (list
+  (list "apple" "atomic")
+  (list "bee")
+  (list "crampon")))
+
+(check-expect
+ (words-by-first-letter
+  (list "a")
+  '())
+ (list '()))
+
+(define (words-by-first-letter l dict)
+  (local (; 1String [List-of Dictionaries] -> [List-of Dictionaries]
+          ; add dictionary of the current letter to the rest
+          (define (add-dict s0 lod)
+            (local (; String -> Boolean
+                    ; if string starts with s0 then true
+                    (define (starts-with-s0? s1)
+                      (string=? (substring s1 0 1) s0))
+                    )
+            (cons (filter starts-with-s0? dict) lod)))
+            )
+  (foldr add-dict '() l)))
+
+; FIRST-DICT ===============================================
+; Letter Dictionary -> Dictionary
+; creates a dictionary of the words where the first
+; letter is l
+
+(check-expect
+ (first-dict "a"
+             (list "apple" "add" "bent"))
+ (list "apple" "add"))
+
+(check-expect
+ (first-dict "a"
+             '())
+ '())
+
+(define (first-dict l d)
+  (cond
+    [(empty? d) '()]
+    [else
+     (if (string=? (substring (first d) 0 1) l)
+         (cons (first d) (first-dict l (rest d)))
+         (first-dict l (rest d)))]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

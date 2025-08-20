@@ -98,7 +98,7 @@
   (local (; IR -> Boolean
           ; check if sales price is greater than ua
           (define (greater-ua? ir0)
-            (>= (ir-sales-price ir0) 4)))
+            (>= (ir-sales-price ir0) ua)))
     (filter greater-ua? loir)))
 
 ; String [List-of IR] -> [List-of IR]
