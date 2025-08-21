@@ -2,6 +2,7 @@
 ;; about the language level of this file in a form that our tools can easily process.
 #reader(lib "htdp-intermediate-reader.ss" "lang")((modname using-abstractions) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "batch-io.rkt" "teachpack" "2htdp") (lib "web-io.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "batch-io.rkt" "teachpack" "2htdp") (lib "web-io.rkt" "teachpack" "2htdp")) #f)))
 ; Using abstractions
+<<<<<<< HEAD
 (build-list 3 sub1)
 (filter odd? '(1 2 3 4 5 6))
 (filter zero? '( 0 0 0  0 1 0 ))
@@ -212,9 +213,6 @@
           (define sorted-names (sort first-names string<?)))
     ; -- IN --
     (foldr string-append-with-space " " sorted-names)))
-
-;429
-
 
 
 
