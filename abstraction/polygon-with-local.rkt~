@@ -1,0 +1,95 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-reader.ss" "lang")((modname polygon-with-local) (read-case-sensitive #t) (teachpacks ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp") (lib "itunes.rkt" "teachpack" "2htdp") (lib "web-io.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "batch-io.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp") (lib "itunes.rkt" "teachpack" "2htdp") (lib "web-io.rkt" "teachpack" "2htdp")) #f)))
+; POLYGON with local
+
+; A Polygon is one of:
+; – (list Posn Posn Posn)
+; – (cons Posn Polygon)
+(define MT (empty-scene 50 50))
+
+; Polygon -> Image
+; adds an image of p to MT
+(define (render-polygon p)
+  (render-line (connect-dots p) (first p) (last p)))
+
+; A NELoP is one of:
+; – (cons Posn '())
+; – (cons Posn NELoP)
+
+; NELoP -> Image
+; connects the Posns in p in an image
+(define (connect-dots p)
+  (cond
+    [(empty? (rest p)) MT]
+    [else
+     (render-line
+      (connect-dots (rest p)) (first p) (second p))]))
+
+; Image Posn Posn -> Image
+; draws a red line from Posn p to Posn q into im
+(define (render-line im p q)
+  (scene+line
+   im (posn-x p) (posn-y p) (posn-x q) (posn-y q) "red"))
+
+; Polygon -> Posn
+; extracts the last item from p
+(define (last p)
+  (cond
+    [(empty? (rest (rest (rest p)))) (third p)]
+    [else (last (rest p))]))
+
+; Polygon -> Image
+; adds an image of p to MT
+(define (render-polygon-local p)
+  (local (
+          ; NELoP -> Image
+          ; connects the Posns in p in an image
+          (define (connect-dots-local p)
+            (cond
+              [(empty? (rest p)) MT]
+              [else
+               (render-line
+                (connect-dots-local (rest p)) (first p) (second p))]))
+          ; Image Posn Posn -> Image
+          ; draws a red line from Posn p to Posn q into im
+          (define (render-line-local im p q)
+            (scene+line
+             im (posn-x p) (posn-y p) (posn-x q) (posn-y q) "red")
+            ))
+          (render-line-local (connect-dots-local p) (first p) (last p))))
+
+
+; Nelon -> Number
+; determines the smallest number on l
+(define (inf l)
+(cond
+[(empty? (rest l)) (first l)]
+[else
+(local ((define smallest-in-rest (inf (rest l))))
+(cond
+[(< (first l) smallest-in-rest) (first l)]
+[else smallest-in-rest]))]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
