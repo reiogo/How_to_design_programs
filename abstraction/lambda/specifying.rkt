@@ -204,6 +204,11 @@
 ; X [List-of X] -> [Number -> Boolean]
 ; produces a function that determines if n0
 ; is the index of x in l0
+;index properties are
+; - x is in l0
+; - the place of the index is correct
+; - it is the first occurence of x in l0
+
 
 (check-expect
  [(is-index? 3 '(1 2 5 6 4 3)) 5] #t)
@@ -217,11 +222,50 @@
  [(is-index? 3 '(1 2 5 6 4)) #f] #t)
 
 (define (is-index? x l0)
-  (lambda (n0) #t))
+  (lambda (n0)
+    (local (;[List-of X] Number -> Boolean
+            ; whether index n1 of alox is x0
+            (define (ith-index-is alox x0)
+              (cond [(empty? alox) #f]
+                    [else
+                     (or
+                      (and (equal? x (first alox)) (= n0 0))
+                      (ith-index-is (rest alox) (sub1 x)))]))
+            ; [List-of X] Number -> Boolean
+            ; Whether x0 shows up before the given index
+            (define (not-occur-before alox x0)
+              (cond [(empty? alox) #f]
+                    [(< x0 0) #t]
+                    [else
+                     (if
+                      (and (equal? x (first alox)) (> x0 0))
+                      #f
+                      (not-occur-before (rest alox) (sub1 x0)))]))
+            )
+      (cond
+        [(false? n0)
+         (if (member? x l0)
+             #f #t)]
+        [else
+         (and
+          (member? x l0)
+          (ith-index-is l0 n0)
+          (not-occur-before l0 n0)
+          #t
+          )]))))
 
+(define x 3)
 
+(define (not-occur-before alox x0)
+  (cond [(empty? alox) #f]
+        [(< x0 0) #t]
+        [else
+         (if
+          (and (equal? x (first alox)) (>= x0 0))
+          #f
+          (not-occur-before (rest alox) (sub1 x0)))]))
 
-
+(not-occur-before '(1 2 3 4) 2)
 
 
 
