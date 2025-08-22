@@ -229,13 +229,13 @@
               (cond [(empty? alox) #f]
                     [else
                      (or
-                      (and (equal? x (first alox)) (= n0 0))
-                      (ith-index-is (rest alox) (sub1 x)))]))
+                      (and (equal? x (first alox)) (= x0 0))
+                      (ith-index-is (rest alox) (sub1 x0)))]))
             ; [List-of X] Number -> Boolean
             ; Whether x0 shows up before the given index
             (define (not-occur-before alox x0)
               (cond [(empty? alox) #f]
-                    [(< x0 0) #t]
+                    [(<= x0 0) #t]
                     [else
                      (if
                       (and (equal? x (first alox)) (> x0 0))
@@ -254,21 +254,71 @@
           #t
           )]))))
 
-(define x 3)
 
-(define (not-occur-before alox x0)
-  (cond [(empty? alox) #f]
-        [(< x0 0) #t]
-        [else
-         (if
-          (and (equal? x (first alox)) (>= x0 0))
-          #f
-          (not-occur-before (rest alox) (sub1 x0)))]))
+; ===============================================================
+; N-INSIDE-PLAYGROUND?
 
-(not-occur-before '(1 2 3 4) 2)
+; distances in terms of pixels
+(define WIDTH 300)
+(define HEIGHT 300)
+
+; N -> [List-of Posn]
+; generate n random Posns in a WIDTH by HEIGHT rectangele
+(check-satisfied (random-posns 3) (n-inside-playground? 3))
+
+(define (random-posns n)
+  (build-list n (lambda (i) (make-posn (random WIDTH) (random HEIGHT)))))
+
+
+; Number -> [[List-of Posn] -> Boolean]
+; returns a predicate that determines
+; lop has the correct number of posns and are all within bounds.
+
+(check-expect
+ [(n-inside-playground? 3) (list
+                            (make-posn 3 5)
+                            (make-posn 299 299)
+                            (make-posn 3 5))] #true)
+
+(check-expect
+ [(n-inside-playground? 3) (list
+                            (make-posn 3 5)
+                            (make-posn 299 299))] #f)
+
+(check-expect
+ [(n-inside-playground? 3) (list
+                            (make-posn 3 5)
+                            (make-posn 301 299)
+                            (make-posn 59 49))] #f)
 
 
 
+(define (n-inside-playground? k)
+  (lambda (l0) (local (; [List-of Posn] -> Boolean
+                      ; Check that all posns are within bounds
+                      (define (within-playground alop)
+                        (andmap
+                         (lambda (p)
+                           (and
+                            (<= 0 (posn-x p) WIDTH)
+                            (<= 0 (posn-y p) HEIGHT)
+                            )) alop))
+                      ; Number [List-of Posn] -> Boolean
+                      ; There are k posns
+                      (define (k-posns n alop)
+                        (= k (foldr (lambda (p num) (add1 num)) 0 alop))))
+                (and
+                 (within-playground l0)
+                 (k-posns k l0)))))
+
+; Number -> [List-of Posn]
+; generate n random Posns in a WIDTH by HEIGHT rectangle
+; that is incorrect but should pass n-inside-playground?
+(check-satisfied
+ (random-posns/bad 1) (n-inside-playground? 1))
+(define (random-posns/bad n)
+  (list
+   (make-posn 3 4)))
 
 
 
