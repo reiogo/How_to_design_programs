@@ -267,6 +267,23 @@
 (define (tabulate-f f n)
   (for/list ([i (in-range 0 n 1)]) (f i)))
 
+; String String -> Boolean
+; check if s1 extends s0
+
+(check-expect
+ (string-extends? "hi" "hii") #t)
+
+(check-expect
+ (string-extends? "hi" "hei") #f)
+
+
+(define (string-extends? s0 s1)
+  (and
+   (<= (string-length s0) (string-length s1))
+   (for/and ([i s0][j s1]) (string=? i j))))
+
+
+
 ; String [List-of String] -> String
 ; retrieve first name that is equal to or an extension of s0 on l0
 
@@ -276,10 +293,25 @@
 (check-expect (find-name "hi" '( "hii" "hello"))
               "hii")
 
+(check-expect (find-name "hi" '( "eii" "hello"))
+              #f)
+
 
 (define (find-name s0 l0)
-  (for/or ([i l0]) (string-extends? i s0))
+  (for/or ([i l0]) (if (string-extends? s0 i) i #f)))
 
+
+; Number [List-of String] -> Boolean
+; no name exceeds a w
+
+(check-expect
+ (notexceed 2  '( "hii" "hello")) #f)
+
+(check-expect
+ (notexceed 5  '( "hii" "hello")) #t)
+
+(define (notexceed w los)
+  (for/and ([i los]) (<= (string-length i) w)))
 
 
 
