@@ -7,16 +7,24 @@
 ; creates a data representation of the directory that a-path identifies
 ; (define (create-dir a-path) ...)
 
+;(define d0
+;  (create-dir
+;   "/Users/evolany994/personal_repos/functional_programming/intertwined_data"))
+;
+;(define d1
+;  (create-dir
+;   "/Users/evolany994/dir_func"))
+;(define d2
+;  (create-dir
+;   "/Users/evolany994/personal_repos"))
+
 (define d0
   (create-dir
-   "/Users/evolany994/personal_repos/functional_programming/intertwined_data"))
-
-(define d1
-  (create-dir
-   "/Users/evolany994/dir_func"))
+   "/home/ro/repos/drracket/intertwined_data"))
+(define d1 d0)
 (define d2
   (create-dir
-   "/Users/evolany994/personal_repos"))
+   "/home/ro/repos/drracket"))
 
 
 ; A Dir.v3 is a structure:
@@ -79,8 +87,8 @@
 ; Dir -> [List-of String]
 ; list the names of all files and directories in a given dir
 
-(check-expect
- (ls d1) '("test" "find.txt" "test.txt"))
+;(check-expect
+; (ls d1) '("test" "find.txt" "test.txt"))
 (check-expect
  (ls (make-dir "hi" '() '())) '())
 
@@ -142,11 +150,11 @@
 
 (check-expect (find d0 "poetry.rkt")
               '("intertwined_data" "poetry.rkt"))
-(check-expect (find d2 "poetry.rkt")
+(check-expect (find d2 "match.rkt")
               '("functional_programming" "intertwined_data" "poetry.rkt"))
-(check-expect
- (find d1 "find.txt")
- '("dir_func" "test" "find.txt"))
+;(check-expect
+; (find d1 "find.txt")
+; '("dir_func" "test" "find.txt"))
 
 (define (find d f)
   (if
@@ -160,11 +168,12 @@
        (cond
          [(empty? dirs) '()]
          [else
-          (local
-            ((define check (make-path (first dirs) f)))
-            (if (empty? check)
-           (make-path-dirs (rest dirs))
-           check))]))
+          (local ((define check (make-path (first dirs) f)))
+            (if
+             (empty? check)
+             (make-path-dirs (rest dirs))
+             check
+             ))]))
      (define (make-path-files files)
        (cond
          [(empty? files) '()]
@@ -173,11 +182,20 @@
            (string=? (file-name (first files)) f)
            (list f)
            (make-path-files (rest files)))]))
+     (define (last l)
+       (cond
+         [(empty? (rest l)) (first l)]
+         [else
+           (last (rest l))]))
      )
-    (append
-     (list (dir-name d))
-     (make-path-dirs (dir-dirs d))
-     (make-path-files (dir-files d)))))
+    (local ((define path (make-path-files (dir-files d))))
+      (append (list (dir-name d))
+              (if (empty? path)
+                  (if
+                   (string=? (last (make-path-dirs (dir-dirs d))) f)
+                   (make-path-dirs (dir-dirs d) f)
+                   '())
+                  path)))))
 
 
 
