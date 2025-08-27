@@ -150,9 +150,18 @@
    (foldr (lambda (f rst) (add1 rst)) 0 (dir.v3-files dir))))
 
 
+(define (atom? x)
+  (cond
+    [(or
+      (number? x)
+      (string? x)
+      (symbol? x)) #t]
+    [else #f]))
 
 
 (check-expect (find? e2 'hang) #t)
+
+(check-expect 
 
 (define (find? dir s)
   (local

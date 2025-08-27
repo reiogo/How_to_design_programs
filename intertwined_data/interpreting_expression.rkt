@@ -89,7 +89,7 @@
  (eval-bool-expression (make-my-and
                         (make-my-not #false)
                         (make-my-or #true #false)))
-                       #true)
+ #true)
 
 (define (eval-bool-expression b-exp)
   (cond
@@ -104,6 +104,50 @@
     [(boolean? b-exp) b-exp]))
 
 
+(define (atom? x)
+  (cond
+    [(or
+      (number? x)
+      (string? x)
+      (symbol? x)) #t]
+    [else #f]))
+
+(check-expect
+ (parse '(add 5 4)) 9)
+
+(define WRONG "wrong kind of S-expression") ; the error message
+
+; S-expr -> BSL-expr
+; creates representation of a BSL expression for s (if possible)
+(define (parse s)
+  (local (; S-expr -> BSL-expr
+          (define (parse s)
+            (cond
+              [(atom? s) (parse-atom s)]
+              [else (parse-sl s)]))
+
+          ; SL -> BSL-expr
+          (define (parse-sl s)
+            (local ((define L (length s)))
+              (cond
+                [(< L 3)
+                 (error WRONG)]
+                [(and (= L 3) (symbol? (first s)))
+                 (cond
+                   [(symbol=? (first s) '+)
+                    (make-add (parse (second s)) (parse (third s)))]
+                   [(symbol=? (first s) '*)
+                    (make-mul (parse (second s)) (parse (third s)))]
+                   [else (error WRONG)])]
+                [else
+                 (error WRONG)])))
+          ; Atom -> BSL-expr
+          (define (parse-atom s)
+            (cond
+              [(number? s) s]
+              [(string? s) (error "strings not allowed")]
+              [(symbol? s) (error "symbols not allowed")])))
+    (parse s)))
 
 
 
@@ -124,4 +168,3 @@
 
 
 
-  
