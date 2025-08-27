@@ -7,24 +7,27 @@
 ; creates a data representation of the directory that a-path identifies
 ; (define (create-dir a-path) ...)
 
-;(define d0
-;  (create-dir
-;   "/Users/evolany994/personal_repos/functional_programming/intertwined_data"))
-;
-;(define d1
-;  (create-dir
-;   "/Users/evolany994/dir_func"))
-;(define d2
-;  (create-dir
-;   "/Users/evolany994/personal_repos"))
-
 (define d0
   (create-dir
-   "/home/ro/repos/drracket/intertwined_data"))
-(define d1 d0)
+   "/Users/evolany994/personal_repos/functional_programming/intertwined_data"))
+
+(define d1
+  (create-dir
+   "/Users/evolany994/dir_func"))
 (define d2
   (create-dir
-   "/home/ro/repos/drracket"))
+   "/Users/evolany994/personal_repos"))
+(define d3
+  (create-dir
+   "/Users/evolany994/personal_repos"))
+
+;(define d0
+;  (create-dir
+;   "/home/ro/repos/drracket/intertwined_data"))
+;(define d1 d0)
+;(define d2
+;  (create-dir
+;   "/home/ro/repos/drracket"))
 
 
 ; A Dir.v3 is a structure:
@@ -151,7 +154,7 @@
 (check-expect (find d0 "poetry.rkt")
               '("intertwined_data" "poetry.rkt"))
 (check-expect (find d2 "match.rkt")
-              '("functional_programming" "intertwined_data" "poetry.rkt"))
+              '("personal_repos" "functional_programming" "intertwined_data" "match.rkt"))
 ;(check-expect
 ; (find d1 "find.txt")
 ; '("dir_func" "test" "find.txt"))
@@ -164,38 +167,68 @@
 
 (define (make-path d f)
   (local
-    ((define (make-path-dirs dirs)
-       (cond
-         [(empty? dirs) '()]
-         [else
-          (local ((define check (make-path (first dirs) f)))
-            (if
-             (empty? check)
-             (make-path-dirs (rest dirs))
-             check
-             ))]))
-     (define (make-path-files files)
-       (cond
-         [(empty? files) '()]
-         [else
-          (if
-           (string=? (file-name (first files)) f)
-           (list f)
-           (make-path-files (rest files)))]))
-     (define (last l)
-       (cond
-         [(empty? (rest l)) (first l)]
-         [else
-           (last (rest l))]))
-     )
-    (local ((define path (make-path-files (dir-files d))))
-      (append (list (dir-name d))
-              (if (empty? path)
-                  (if
-                   (string=? (last (make-path-dirs (dir-dirs d))) f)
-                   (make-path-dirs (dir-dirs d) f)
-                   '())
-                  path)))))
+    ((define check-this-file
+       (local ((define in-files
+                 (foldl (lambda (file rst)
+                          (if (string=? (file-name file) f)
+                              (list f)
+                              rst)) #false (dir-files d))))
+         (if
+          (false? in-files)
+          (foldl (lambda (dir rst)
+                   (local ((define in-dir (make-path dir f)))
+                     (if
+                      (false? in-dir)
+                      rst
+                      in-dir))) #false (dir-dirs d))
+          in-files))))
+    (if
+     (false? check-this-file)
+     #false
+     (cons (dir-name d) check-this-file)
+     )))
+
+; Dirs String -> [List-of Path]
+; finds all paths of f in d
+
+(check-expect (find-all d2 "match.rkt")
+              '(("personal_repos"
+                 "functional_programming"
+                 "intermezzo"
+                 "match.rkt")
+                ("personal_repos"
+                 "functional_programming"
+                 "intertwined_data"
+                 "match.rkt")))
+
+(check-expect (find-all d2 "test")
+              (list
+               (list "personal_repos" "codingqs" "c_programming" "test")
+               (list "personal_repos" "functional_programming" "test")) )
+
+(define (find-all d f)
+  (local ((define result
+            (local (
+                    (define file-paths
+                      (foldr (lambda (file rst)
+                               (if (string=? (file-name file) f) (cons (list f) rst) rst))
+                             '() (dir-files d)))
+                    (define dir-paths
+                      (foldr (lambda (dir rst)
+                               (append (find-all dir f) rst)) '() (dir-dirs d))))
+              (append
+               (if (empty? file-paths) '() file-paths)
+               (if (empty? dir-paths) '() dir-paths)))))
+    (if (empty? result)'()
+     (map (lambda (path) (cons (dir-name d) path)) result))))
+
+
+
+
+
+
+
+
 
 
 
