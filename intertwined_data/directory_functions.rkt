@@ -220,9 +220,65 @@
                (if (empty? file-paths) '() file-paths)
                (if (empty? dir-paths) '() dir-paths)))))
     (if (empty? result)'()
-     (map (lambda (path) (cons (dir-name d) path)) result))))
+        (map (lambda (path) (cons (dir-name d) path)) result))))
 
 
+; Dir -> [List-of Path]
+; lists paths to all the files in a give dir
+
+(check-expect (ls-R d1)
+              '(("dir_func" "test.txt")
+                ("dir_func" "test" "find.txt")
+                ))
+
+(define (ls-R dir)
+  (map (lambda (path) (cons (dir-name dir) path)) 
+   (append
+    (ls-R-files (dir-files dir))
+    (ls-R-dirs (dir-dirs dir)))))
+
+(define (ls-R-files files)
+  (cond
+    [(empty? files) '()]
+    [else
+     (cons
+      (list (file-name (first files)))
+      (ls-R-files (rest files)))]))
+
+(define (ls-R-dirs dirs)
+  (cond
+    [(empty? dirs) '()]
+    [else
+     (append
+      (ls-R (first dirs))
+      (ls-R-dirs (rest dirs)))]))
+
+; Dirs String -> [List-of Path]
+; finds all paths of f in d
+
+(check-expect (find-all-r d2 "match.rkt")
+              '(("personal_repos"
+                 "functional_programming"
+                 "intermezzo"
+                 "match.rkt")
+                ("personal_repos"
+                 "functional_programming"
+                 "intertwined_data"
+                 "match.rkt")))
+
+(check-expect (find-all-r d2 "test")
+              (list
+               (list "personal_repos" "codingqs" "c_programming" "test")
+               (list "personal_repos" "functional_programming" "test")) )
+
+(define (find-all-r d f)
+  (local ((define (last l)
+            (cond
+              [(empty? (rest l)) (first l)]
+              [else
+                (last (rest l))])))
+    (filter (lambda (path)
+            (string=? (last path) f)) (ls-R d))))
 
 
 
