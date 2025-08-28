@@ -421,18 +421,18 @@
 (define f (make-bsl-func-def 'f 'x (make-add 3 'x)))
 (define g (make-bsl-func-def 'g 'y (make-func 'f (make-mul 2 'y))))
 (define h  (make-bsl-func-def 'h 'v
-                              (make-add
-                               (make-func 'f 'v) (make-func 'g 'v))))
+                       (make-add
+                        (make-func 'f 'v) (make-func 'g 'v))))
 (define da-fgh
   (list
    (make-bsl-func-def 'f 'x (make-add 3 'x))
    (make-bsl-func-def 'g 'y (make-func 'f (make-mul 2 'y)))
    (make-bsl-func-def 'h 'v
-                      (make-add
-                       (make-func 'f 'v) (make-func 'g 'v)))))
+                       (make-add
+                        (make-func 'f 'v) (make-func 'g 'v)))))
 
 
-; BSL-func-def* Symbol -> BSL-func-def
+ ; BSL-func-def* Symbol -> BSL-func-def
 ; retrieves the definition of f in da
 ; or signal "undefined function" if da does not contain one
 
@@ -449,7 +449,7 @@
       (first da)
       (lookup-def (rest da) f))]))
 
-; BSL-func-def BSL-func-def* -> BSL-expr
+; BSL-func-expr BSL-func-def* -> BSL-expr
 ; evaluates an expression with functions
 
 (check-expect
@@ -459,11 +459,27 @@
  27)
 
 
-(define (eval-function* bfd bfd*)
-  (...
-   (bsl-func-def-name bfd)
-   (bsl-func-def-parameter bfd)
-   (bsl-func-def-body bfd)))
+(define (eval-function* bfe bfd*)
+  (local (
+          (define (make-exp bfe bfd*)
+            (cond
+              [(number? bfe) bfe]
+              [(symbol? bfe) (error "non-declared variable")]
+              [(mul? bfe)
+               (make-mul
+                (make-exp (mul-left bfe) bfd*)
+                (make-exp (mul-right bfe) bfd*))]
+              [(add? bfe)
+               (make-add
+                (make-exp (add-left bfe) bfd*)
+                (make-exp (add-right bfe) bfd*))]
+              [(func? bfe)
+               (local ((define spec-func (lookup-def bfd* (func-name bfe))))
+               (make-exp
+                (subst bfe (bsl-func-def-parameter spec-func)
+                       (make-exp (func-expr bfe) bfd*))
+                         bfd*))])))
+    (eval-expression (make-exp bfe bfd*))))
 
 
 
