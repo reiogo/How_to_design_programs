@@ -206,9 +206,31 @@
   (above/align 'left item1-rendered item2-rendered))
 
 ; XItem.v1 -> Image
-; renders a single item as a "word" prefixed by a buullet
+; renders a single item as a "word" prefixed by a bullet
+
+(check-expect
+ (render-item1 (cons 'li (cons '(word ((text "two"))) '())))
+ (beside/align 'center BULLET (text "two" 12 'black)))
+
 (define (render-item1 i)
-  (... (xexpr-content i)))
+  (local ((define content (xexpr-content i))
+          (define element (first content))
+          (define word-in-i (word-text element)))
+    (beside/align 'center BULLET (text word-in-i 12 'black))))
+
+; XEnum.v1 -> Image
+; renders a simple enumeration as an image
+
+(check-expect (render-enum1 e0) e0-rendered)
+
+(define (render-enum1 xe)
+  (local ((define content (xexpr-content xe))
+          ; XItem.v1 Image -> Image
+          (define (deal-with-one-item fst-itm so-far)
+            ...))
+    (foldr deal-with-one-item empty-image content)))
+
+
 
 
 
