@@ -94,10 +94,11 @@
 (check-expect (xexpr-content e2) '((action)))
 
 (define (xexpr-content xe)
-  (if
+  (cond [(empty? (rest xe)) '()]
+        [else (if
    (list-of-attributes? (second xe))
    (rest (rest xe))
-   (rest xe)))
+   (rest xe))]))
 
 
 
@@ -221,14 +222,24 @@
 ; XEnum.v1 -> Image
 ; renders a simple enumeration as an image
 
-(check-expect (render-enum1 e0) e0-rendered)
+(check-expect (render-enum1 en0) e0-rendered)
 
 (define (render-enum1 xe)
   (local ((define content (xexpr-content xe))
           ; XItem.v1 Image -> Image
           (define (deal-with-one-item fst-itm so-far)
-            ...))
+            (above/align 'left (render-item1 fst-itm) so-far)))
     (foldr deal-with-one-item empty-image content)))
+
+
+
+
+
+
+
+
+
+
 
 
 
