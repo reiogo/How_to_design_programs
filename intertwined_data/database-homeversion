@@ -124,12 +124,17 @@
   (local((define old-labels (db-schema db))
          ; Content -> Content
          (define (reorder-content c)
-           (map (lambda (row) (reorder-row row old-labels)) c))
+           (map (lambda (row) (reorder-row row lol)) c))
 
          ; Row -> Row
-         (local ((define num ())
-                 (define (reorder-row r l)
-                   (list-ref r num)))
+         (define (reorder-row r l)
+             (cond
+[(empty? l) '()]
+[else 
+(cons
+(list-ref r (index-of old-labels (first l)))
+(reorder-row r (rest l)))]))
+
            )
          (make-db
           lol
