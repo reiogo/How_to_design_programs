@@ -128,27 +128,27 @@
 
          ; Row -> Row
          (define (reorder-row r l)
-             (cond
-[(empty? l) '()]
-[else 
-(cons
-(list-ref r (index-of old-labels (first l)))
-(reorder-row r (rest l)))]))
-; [List-of Label] Label -> Number
-(define (index lol l)
-(cond
-[(empty? lol) #f]
-[else 
-(local ((define res (index (rest lol) l)))
-(if (string=? (first lol) l)
-0 (if (zero? res) (add1 res) res))
-))]
+           (cond
+             [(empty? l) '()]
+             [else 
+              (cons
+               (list-ref r (index-of old-labels (first l)))
+               (reorder-row r (rest l)))]))
+         ; [List-of Label] Label -> Number
+         (define (index lol l)
+           (cond
+             [(empty? lol) #f]
+             [else 
+              (local ((define res (index (rest lol) l)))
+                (if (string=? (first lol) l)
+                    0 (if (zero? res) (add1 res) res))
+                ))]
 )
 
-           )
-         (make-db
-          lol
-          (reorder-content (db-content db)))))
+)
+(make-db
+ lol
+ (reorder-content (db-content db)))))
 
 
 
@@ -168,4 +168,3 @@
 
 
 
-  
