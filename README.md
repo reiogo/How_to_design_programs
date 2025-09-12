@@ -30,7 +30,7 @@ Solutions are organized by **Part I–VI** of the textbook:
 
 ## Highlights
 Here are a few representative solutions:
-- [Lamda Functions and Abstractions](./part_III/abstraction/lambda/identity.rkt)  
+- [Lamda Functions and Abstractions](./part_III/lambda/identity.rkt)  
 - [Intertwined Data Definitions](./part_IV/s-expressions/directory_functions.rkt)  
 
 Each example demonstrates **tests, systematic design, and clear documentation**.
