@@ -159,6 +159,12 @@
 
 ; List-of-numbers -> List-of-numbers
 ; produces a sorted version of alon
+
+(check-expect (sort> '(1 2 3)) '(3 2 1))
+(check-expect (sort> '(-2 -2 1)) '(1 -2 -2))
+(check-expect (sort> '(3 2 1)) '(3 2 1))
+(check-expect (sort> '()) '())
+
 (define (sort> alon)
   (cond
     [(empty? alon) '()]
@@ -173,6 +179,28 @@
               (cons n alon)
               (cons (first alon) (insert n (rest alon))))]))
 
+; N N-> [List-of Number]
+; create a list of numbers n0 long with each number less than n1
+
+(check-expect (create-tests 0 0) '())
+(check-random (create-tests 1 15) (list (random 15))) 
+
+(define (create-tests n0 n1)
+  (cond
+    [(zero? n0) '()]
+    [else
+     (cons
+      (random n1)
+      (create-tests (sub1 n0) n1))]))
+
+
+(define l0 (create-tests 50 15000000))
+
+(time (sort> l0))
+(time (quick-sort l0))
+;(define l1 (create-tests 10 15000000))
+;(time (sort> l1))
+;(time (quick-sort l1))
 
 
 

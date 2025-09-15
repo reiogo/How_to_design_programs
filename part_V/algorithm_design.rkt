@@ -118,7 +118,22 @@
 (check-expect (gcd-structural 6 25) 1)
 (check-expect (gcd-structural 18 24) 6)
 
-(define (gcd-structural n m)
+(define (gcd-structural small large)
+  (largest-common (divisors small small) (divisors small large)))
+
+; N[>= 1] N[>= 1] -> [List-of N]
+; computes the list of divisors of l smaller or equal to k
+
+(define (divisors l k)
+  (filter (lambda (n) (zero? (modulo k n))) (build-list l add1)))
+
+;[List-of N] [List-of N] -> N
+; finds the largest number common to both k and l
+(check-expect (largest-common '(1 2 19) '(19 18 21)) 19)
+(define (largest-common k l)
+  (first (sort (filter (lambda (n) (member? n l)) k) >)))
+
+(define (gcd-structural.v1 n m)
   (local (; N -> N
           ; determines the greatest divisor of n and m less than i
           (define (greatest-divisor-<= i)
@@ -149,6 +164,7 @@
 
 ;(time (gcd-structural 101135853 45014640))
 ;(time (gcd-generative 101135853 45014640))
+
 
 
 
