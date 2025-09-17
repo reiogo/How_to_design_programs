@@ -68,31 +68,112 @@
 
 ; Line -> String
 ; Bundle the first word or 1String
+
+(check-expect (bundle-first '("a" "b" " "))
+              "ab")
+
 (define (bundle-first l)
   (cond
-    [(not (string-lower-case? (first l))) ""]
-    [else
-     (string-append (first l) (bundle-first (rest l)))]))
+    [(empty? l) ""]
+    [(string-lower-case? (first l))
+     (string-append (first l) (bundle-first (rest l)))]
+    [else ""]))
 
 ; Line -> Line
 ; remove the first word/1String
+
+(check-expect (remove-first '("a" "b" " "))
+              '(" "))
+
 (define (remove-first l)
   (cond
     [(empty? l) '()]
-    [(not (string-lower-case? (first l))) l]))
+    [(string-lower-case? (first l))
+     (remove-first (rest l))]
+    [else l]))
 
 
 ; Line -> [List-of Token]
+; generative: the line will be split into
+; words, 1Strings, and whitespace (or empty). Then these elements
+; will be consed together
+; termination: Each recursive call is shrinking the
+; line by at least one character.
+
+(check-expect (tokenize '("a" "b" " " "."))
+              '("ab" "."))
+(check-expect (tokenize '("a" "b" " " "." "h" "e"))
+              '("ab" "." "he"))
+(check-expect (tokenize '("a" "b" " " "." "h" "e"))
+              '("ab" "." "he"))
+
 (define (tokenize l)
-  '())
+  (cond
+    [(empty? l) '()]
+    [(string-lower-case? (first l))
+     (cons (bundle-first l)
+           (tokenize (remove-first l)))]
+    [(string-whitespace? (first l)) (tokenize (rest l))]
+    [else (cons (first l)
+                (tokenize (rest l)))]))
 
 ; 4 generative questions:
-; if a line is empty
+; if a line is a one
 ; then the list of tokens is empty
 ; else the file contains at least one 1String
 ; consecutive letters will be bundled up into words and
-; non-letters will be as is or if they are whitespace, then removed
+; non-letters will be as is or if they are whitespace, removed
 ; They will all be consed together
+
+; Number [List-of Number] -> [List-of Number]
+; make a row
+(define (make-row n0 lon0)
+  (cond
+    [(zero? n0) '()]
+    [else
+     (cons (first lon0)
+           (make-row (sub1 n0) (rest lon0)))]))
+
+; Number [List-of Number] -> [List-of Number]
+; remove first n numbers from lon
+(define (remove-row n1 lon1)
+  (cond
+    [(zero? n1) lon1]
+    [else
+     (remove-row (sub1 n1) (rest lon1))]))
+
+; Number [List-of Number] -> [List-of [List-of Number]]
+; makes a matrix
+; generative: create row from the first n numbers
+; pass the rest recursively
+; termination: lon recursively shrinks
+
+(check-expect
+ (create-matrix 2 '(1 2 3 4))
+ '((1 2)
+   (3 4)))
+(check-expect
+ (create-matrix 0 '())
+ '())
+(check-expect
+ (create-matrix 3 '(1 2 3 4 5 6 7 8 9))
+ '((1 2 3)
+   (4 5 6)
+   (7 8 9)))
+
+(define (create-matrix n lon)
+  (cond
+    [(empty? lon) '()]
+    [else
+     (cons
+      (make-row n lon)
+      (create-matrix n (remove-row n lon)))]))
+
+; trivial case is a 0 matrix
+; return empty list
+; generate new problems by
+; taking the first n numbers and creating a list with it
+; the end result comes from consing the lists together
 
 
 
