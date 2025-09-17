@@ -185,6 +185,7 @@
                 [else (func nxt)]))))
     (func 0)))
 
+; BINARY SEARCH ==========================================
 ; Table -> Number
 ; find root of a monotonically increasing function
 ; termination: each call cuts the range in half, terminates
