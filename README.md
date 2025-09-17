@@ -31,7 +31,8 @@ Solutions are organized by **Part I–VI** of the textbook:
 ## Highlights
 Here are a few representative solutions:
 - [Lamda Functions and Abstractions](./part_III/lambda/identity-matrix.rkt)  
-- [Intertwined Data Definitions](./part_IV/s-expressions/find_all.rkt)  
+- [Intertwined Data Definitions](./part_IV/s-expressions/find_all.rkt)
+- [Recursion and Math](./part_V/simulating_integrations.rkt)  
 
 Each example demonstrates **tests, systematic design, and clear documentation**.
 
