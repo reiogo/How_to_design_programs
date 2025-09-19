@@ -110,6 +110,13 @@
                      (make-posn 3 2)
                      (make-posn 1 3)
                      (make-posn 0 1))] #t)
+
+(check-expect [(n-queens-solution? 4)
+               (list (make-posn 0 1)
+                     (make-posn 1 3)
+                     (make-posn 2 0)
+                     (make-posn 3 2))] #t)
+
 (check-expect [(n-queens-solution? 4)
                (list (make-posn 2 0)
                      (make-posn 2 2)
@@ -125,8 +132,8 @@
                 [else
                  (and
                   (andmap (lambda (r)
-                            (threatening? (first loq) r))
-                          (rest solution))
+                            (not (threatening? (first loq) r)))
+                          (rest loq))
                   (threat-validation (rest loq)))])))
       (and (= (length solution) n)
            (threat-validation solution)))))
