@@ -14,9 +14,6 @@
 ; of immediate neighbors that leads from the first Node on
 ; the list to the last one.
 
-; A Cyclic-Graph is a Graph
-; where the edges can make a closed loop.
-
 (define sample-graph
   '((A B E)
     (B E F)
@@ -25,6 +22,15 @@
     (E C F)
     (F D G)
     (G)))
+(define cyclic-graph
+  '((A B E)
+    (B E F)
+    (E C F)
+    (C B D)
+    (F D G)
+    (D)
+    (G)
+    ))
 
 ; Node Graph -> [List-of Node]
 ; list of immediate neighbors
@@ -48,7 +54,6 @@
 (check-member-of (find-path 'E 'D sample-graph) '(E F D) '(E C D))
 (check-expect (find-path 'C 'G sample-graph) #f)
 (check-expect (find-path 'E 'G sample-graph) '(E F G))
-
 
 
 (define (find-path origination destination G)
@@ -76,6 +81,7 @@
 ; attempts to find a path between all pairs of nodes in g
 
 (check-expect (test-on-all-nodes sample-graph) #f)
+;(check-expect (test-on-all-nodes cyclic-graph) #f)
 (check-expect (test-on-all-nodes '((a b) (b a))) #t)
 
 (define (test-on-all-nodes g)
@@ -88,7 +94,29 @@
                  (and
                   (not (false? (find-path cur (first n) g)))
                   rst)) #t g))
-        (test-on-all-nodes (rest g)))]))
+      (test-on-all-nodes (rest g)))]))
+
+
+; Refactor find-path
+(check-member-of (find-path.v1 'E 'D sample-graph) '(E F D) '(E C D))
+(check-expect (find-path.v1 'C 'G sample-graph) #f)
+(check-expect (find-path.v1 'E 'G sample-graph) '(E F G))
+
+
+(define (find-path.v1 origination destination G)
+  (cond
+    [(symbol=? origination destination) (list destination)]
+    [else (local ((define next (neighbors origination G))
+                  (define candidate
+                    (foldl (lambda (o rst)
+                             (local ((define candidate0 (find-path.v1 o destination G)))
+                               (cond
+                                 [(boolean? candidate0) rst]
+                                 [else candidate0]))) #f next)))
+            (cond
+              [(boolean? candidate) #f]
+              [else (cons origination candidate)]))]))
+
 
 
 
