@@ -241,14 +241,190 @@
             (cond
               [(empty? (rest s)) (append s0 a)]
               [else (mirror/a (rest s)
-                                   (cons (first s) a))])))
+                              (cons (first s) a))])))
     (mirror/a s0 '())))
 
 
 
+; Matrix -> Matrix
+; find the first row that doesn't start with 0 and use it as
+; the first one
+; generative: move the first row to the last place
+; termination: this function does not terminate if all rows in
+; M start with 0
+
+(check-expect (rotate-until '((0 4 5) (1 2 3)))
+              '((1 2 3) (0 4 5)))
+(check-error (rotate-until '((0 2 3) (0 2 3)))
+             "all rows start with zero")
+
+(define (rotate-until.v2 M0)
+  (local (; Matrix ??? -> Matrix
+          ; accumulator: a represents the number of times
+          ; M has been rotated
+          (define (rotate/a M a)
+            (cond
+              [(= a (length M)) (error "all rows start with zero")]
+              [(not (= (first (first M)) 0)) M]
+              [else
+               (rotate/a
+                (append (rest M) (list (first M))) (add1 a))])))
+    (rotate/a M0 0)))
+
+
+(define (rotate-until M0)
+  (local (; Matrix [List-of Row] -> Matrix
+          ; accumulator: seen represents the rows
+          ; starting with zero in M0 that are not in M
+          (define (rotate/a M seen)
+            (cond
+              [(empty? M) (error "all rows start with zero")]
+              [(not (zero? (first (first M)))) (append M seen)]
+              [else
+               (rotate/a
+                (rest M) (cons (first M) seen))])))
+    (rotate/a M0 '())))
+
+(define (rotate-until.v1 M)
+  (cond
+    [(not (= (first (first M)) 0)) M]
+    [else (rotate-until.v1 (append (rest M) (list (first M))))]))
+
+;(time
+; (rotate-until.v1
+;  (append
+;   (build-list 9000
+;               (lambda (x) (list 0 2)))
+;   '((1 2)))))
+;
+;(time
+; (rotate-until
+;  (append
+;   (build-list 9000
+;               (lambda (x) (list 0 2)))
+;   '((1 2)))))
+
+
+; [List-of Number] -> Number
+; corresponding number to a list of digits
+; first item is most significant digit
+
+(check-expect (to10 '(1 0 2)) 102)
+
+(define (to10 alon0)
+  (local (; [List-of Number] Number -> Number
+          ; accumulator: a represents the digits processed
+          ; so far
+          (define (to10/a alon a)
+            (cond
+              [(empty? alon) a]
+              [else
+               (to10/a (rest alon)
+                       (+ (* 10 a) (first alon)))])))
+    (to10/a alon0 0)))
+
+
+; N [>=1] -> Boolean
+; checks whether it is prime
+
+(check-expect (is-prime 2) #t)
+(check-expect (is-prime 17) #t)
+(check-expect (is-prime 4) #f)
+(check-expect (is-prime 9973) #t)
+
+(define (is-prime n0)
+  (local (; N [>=1] N -> Boolean
+          ; accumulator: a represents the original number
+          (define (is-prime/a n a)
+            (cond
+              [(= n 1) #t]
+              [(zero? (modulo a n)) #f]
+              [else
+               (is-prime/a (sub1 n) a)])))
+    (is-prime/a (- n0 1) n0)))
+
+
+; [X -> Y] [List-of X] -> [List-of Y]
+; accumulator style map
+
+(check-expect (accmap add1 '(1 2 3)) '(2 3 4))
+
+(define (accmap f alox0)
+  (local (; [X -> Y] [List-of X] [List-of Y] -> [List-of Y]
+          ; accumulator: a represents the list of
+          ; X processed so far
+          (define (map/a alox a)
+            (cond
+              [(empty? alox) (reverse a)]
+              [else
+               (map/a (rest alox) (cons (f (first alox)) a))])))
+    (map/a alox0 '())))
+
+
+(check-expect (my-foldl + 0 '(1 2 3)) (foldl + 0 '(1 2 3)))
+(check-expect (my-foldl cons '()
+                        '(a b c)) (foldl cons '() '(a b c)))
+
+; [X Y -> Y] Y [List-of X] -> Y
+
+(define (my-foldl f e l0)
+  (local (; Y [List-of X] -> Y
+          ; accumulator: a represents the elements of l0 that
+          ; are processed so far.
+          (define (fold/a a l)
+            (cond
+              [(empty? l) a]
+              [else (fold/a (f (first l) a) (rest l))])))
+    (fold/a e l0)))
+
+; N [X -> Y] -> [List-of Y]
+; build-list using accumulator style
+
+(check-expect (my-build-list 5 add1) (build-list 5 add1))
+(check-expect (my-build-list 70 (lambda (x) (- (add1 (* x x)) 17)))
+              (build-list 70 (lambda (x) (- (add1 (* x x)) 17))))
+
+(define (my-build-list n0 f)
+  (local (; N [List-of Y] -> [List-of Y]
+          ; accumulator: a represents the elements already
+          ; processed from (n, n0]
+          (define (build-list/a n a)
+            (cond
+              [(= -1 n) a]
+              [else (build-list/a (sub1 n) (cons (f n) a))])))
+    (build-list/a (sub1 n0) '())))
+
+
+; N String String -> String
+; arrange words with a maximal width w and write out to out-f
+(define (fmt w in-f out-f)
+  (local (; [List-of 1String] ??? -> String
+          ; accumulator: a represents the processed input file
+          ; so far
+          ; accumulator: count represents the number of letters
+          ; processed so far
+          (define (fmt/a l a count)
+            (cond
+              [(empty? l) a]
+              [(and (= (modulo count w) 0) (> count 0))
+               (fmt/a (rest l)
+                      (string-append a "\n" (first l))
+                      (add1 count))]
+              [else (fmt/a (rest l)
+                           (string-append a (first l))
+                           (add1 count))]))
+          (define input (filter (lambda (s) (not (string=? "\n" s))) (read-1strings in-f))))
+    (write-file out-f (fmt/a input "" 0))
+  ))
+(fmt 87 "test.txt" "output.txt")
 
 
 
 
 
 
+
+
+
+
+  
