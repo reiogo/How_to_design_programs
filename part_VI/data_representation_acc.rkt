@@ -238,81 +238,96 @@
 (check-expect (create-next-states.v2
                '()) '())
 
-(define (create-next-states.v2 alop)
-  (cond
-    [(empty? alop) '()]
-    [else
-     (append
-      (next-states.v2 (first alop))
-      (create-next-states.v2 (rest alop)))]))
+(define (create-next-states.v2 alop0)
+  (local (; [List-of PuzzleState.v2] ??? -> [List-of PuzzleState.v2]
+          ; accumulator: a represents the sequence of puzzlestates from
+          ; alop to alop0
+          (define (create-next-states/a alop a)
+            (cond
+              [(empty? alop) '()]
+              [else
+               (append
+                (next-states.v2 (first alop) a)
+                (create-next-states/a (rest alop) (cons (first alop) a)))])))
+    (create-next-states/a alop0 '())))
 
 ; PuzzleState.v2 -> [List-of PuzzleState.v2]
 ; create list of possible next states
 
-(check-expect (next-states.v2 (make-pstate '(6 6) 'left '(0 0)))
+(check-expect (next-states.v2 (make-pstate.v2 '(6 6) 'left '(0 0) '()) '())
               (list
-               (make-pstate '(6 4) 'right '(0 2))
-               (make-pstate '(6 5) 'right '(0 1))
-               (make-pstate '(5 5) 'right '(1 1))))
-(check-expect (next-states.v2 (make-pstate '(3 4) 'right '(3 2)))
+               (make-pstate.v2 '(6 4) 'right '(0 2) '())
+               (make-pstate.v2 '(6 5) 'right '(0 1) '())
+               (make-pstate.v2 '(5 5) 'right '(1 1) '())))
+(check-expect (next-states.v2 (make-pstate.v2 '(3 4) 'right '(3 2) '()) '())
               (list
-               (make-pstate '(4 4) 'left '(2 2))))
-(check-expect (next-states.v2 (make-pstate '(6 6) 'right '(0 0)))
+               (make-pstate.v2 '(4 4) 'left '(2 2) '())))
+(check-expect (next-states.v2 (make-pstate.v2 '(6 6) 'right '(0 0) '()) '())
               '())
-(check-expect (next-states.v2 (make-pstate '(2 2) 'left '(1 1)))
+(check-expect (next-states.v2 (make-pstate.v2 '(2 2) 'left '(1 1) '()) '())
               (list
-               (make-pstate '(0 2) 'right '(3 1))
-               (make-pstate '(1 1) 'right '(2 2))))
-(check-expect (next-states.v2 (make-pstate '(1 1) 'left '(2 2)))
+               (make-pstate.v2 '(0 2) 'right '(3 1) '())
+               (make-pstate.v2 '(1 1) 'right '(2 2) '())))
+(check-expect (next-states.v2 (make-pstate.v2 '(1 1) 'left '(2 2) '()) '())
               (list
-               (make-pstate '(0 1) 'right '(3 2))
-               (make-pstate '(0 0) 'right '(3 3))))
+               (make-pstate.v2 '(0 1) 'right '(3 2) '())
+               (make-pstate.v2 '(0 0) 'right '(3 3) '())))
 
-(define (next-states.v2 s)
+(define (next-states.v2 s0 a)
   (local ((define (left-one s)
-            (first (pstate-init s)))
+            (first (pstate.v2-init s)))
           (define (left-two s)
-            (second (pstate-init s)))
+            (second (pstate.v2-init s)))
           (define (right-one s)
-            (first (pstate-final s)))
+            (first (pstate.v2-final s)))
           (define (right-two s)
-            (second (pstate-final s)))
-          (define (main s0)
+            (second (pstate.v2-final s)))
+          (define (main s)
             (cond
-              [(symbol=? (pstate-inter s) 'left)
+              [(symbol=? (pstate.v2-inter s) 'left)
                (list
-                (make-pstate
+                (make-pstate.v2
                  (list (left-one s) (- (left-two s) 2)) 'right
-                 (list (right-one s) (+ (right-two s) 2)))
-                (make-pstate
+                 (list (right-one s) (+ (right-two s) 2))
+                 a)
+                (make-pstate.v2
                  (list (- (left-one s) 2) (left-two s)) 'right
-                 (list (+ (right-one s) 2) (right-two s)))
-                (make-pstate
+                 (list (+ (right-one s) 2) (right-two s))
+                 a)
+                (make-pstate.v2
                  (list (left-one s) (- (left-two s) 1)) 'right
-                 (list (right-one s) (+ (right-two s) 1)))
-                (make-pstate
+                 (list (right-one s) (+ (right-two s) 1))
+                 a)
+                (make-pstate.v2
                  (list (- (left-one s) 1) (left-two s)) 'right
-                 (list (+ (right-one s) 1) (right-two s)))
-                (make-pstate
+                 (list (+ (right-one s) 1) (right-two s))
+                 a)
+                (make-pstate.v2
                  (list (- (left-one s) 1) (- (left-two s) 1)) 'right
-                 (list (+ (right-one s) 1) (+ (right-two s) 1))))]
+                 (list (+ (right-one s) 1) (+ (right-two s) 1))
+                 a))]
               [else
                (list
-                (make-pstate
+                (make-pstate.v2
                  (list (left-one s) (+ (left-two s) 2)) 'left
-                 (list (right-one s) (- (right-two s) 2)))
-                (make-pstate
+                 (list (right-one s) (- (right-two s) 2))
+                 a)
+                (make-pstate.v2
                  (list (+ (left-one s) 2) (left-two s)) 'left
-                 (list (- (right-one s) 2) (right-two s)))
-                (make-pstate
+                 (list (- (right-one s) 2) (right-two s))
+                 a)
+                (make-pstate.v2
                  (list (left-one s) (+ (left-two s) 1)) 'left
-                 (list (right-one s) (- (right-two s) 1)))
-                (make-pstate
+                 (list (right-one s) (- (right-two s) 1))
+                 a)
+                (make-pstate.v2
                  (list (+ (left-one s) 1) (left-two s)) 'left
-                 (list (- (right-one s) 1) (right-two s)))
-                (make-pstate
+                 (list (- (right-one s) 1) (right-two s))
+                 a)
+                (make-pstate.v2
                  (list (+ (left-one s) 1) (+ (left-two s) 1)) 'left
-                 (list (- (right-one s) 1) (- (right-two s) 1))))])))
+                 (list (- (right-one s) 1) (- (right-two s) 1)))
+                a)])))
     (filter (lambda (x) (and (not (negative? (left-one x)))
                              (not (negative? (left-two x)))
                              (not (negative? (right-one x)))
@@ -323,7 +338,7 @@
                              (or
                               (>= (right-one x) (right-two x))
                               (zero? (right-one x)))))
-            (main s))))
+            (main s0))))
 
 
 
