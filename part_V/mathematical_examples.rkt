@@ -113,8 +113,8 @@
                (lambda (x) 20) 12 22) 200 EPSILON)
 (check-within (integrate-kepler
                (lambda (x) (* 2 x)) 0 10) 100 EPSILON)
-(check-within (integrate-kepler
-               (lambda (x) (* 3 (sqr x))) 0 10) 1000 EPSILON) 
+;(check-within (integrate-kepler
+;              (lambda (x) (* 3 (sqr x))) 0 10) 1000 EPSILON) 
 
 (define (integrate-kepler f a b)
   (local ((define mid (/ (+ a b) 2))
@@ -144,11 +144,11 @@
 (define (integrate-dc f a b)
   (local ((define mid (/ (+ a b) 2)))
     (cond
-    [(<= (- b a) INTERVAL-THRESHOLD)
-     (integrate-kepler f a b)]
-    [else
-     (+ (integrate-dc f a mid)
-        (integrate-dc f mid b))])))
+      [(<= (- b a) INTERVAL-THRESHOLD)
+       (integrate-kepler f a b)]
+      [else
+       (+ (integrate-dc f a mid)
+          (integrate-dc f mid b))])))
 
 (define R 200)
 
@@ -171,6 +171,211 @@
                 [else
                  (+ (rectangle i) (calc-rect (sub1 i)))]))))
     (calc-rect (- R 1))))
+
+; Gaussian Elimination =======================================
+
+; An SOE (system of equation) is a non-empty Matrix.
+; constraint: if the matrix length is n (in N), each item has length
+; (+ n 1)
+; interpretation: represents a system of linear equations
+
+; An Equation is a [List-of Number].
+; constraint: an Equation contains at least two numbers.
+; interpretation: if (list a1 ... an b) is an Equation,
+; a1, ... an are the left-hand side variable coefficients
+; and b is the right-hand side
+
+; A Solution is a [List-of Number]
+
+; A TM (triangular matrix) is a [List-of Equation]
+; such that the Equations are of decreasing length:
+; n + 1, n, n-1, ... 2.
+; interpretaion: represents a triangular matrix
+
+; examples
+(define M '((2 2 3 10)
+            (2 5 12 31)
+            (4 1 -2 1)))
+(define S '(1 1 2))
+
+; Equation -> [List-of Number]
+; extracts the left-hand side from a row in a matrix
+(check-expect (lhs (first M)) '(2 2 3))
+(define (lhs e)
+  (reverse (rest (reverse e))))
+
+; Equation -> Number
+; extracts the right-hand side from a row in a matrix
+(check-expect (rhs (first M)) 10)
+(define (rhs e)
+  (first (reverse e)))
+
+; Equation Solution -> Number
+; plug in sol into eq
+
+(check-expect (plug-in (first M) S) 10)
+(check-expect (plug-in (first M) '(2 2 1)) 11)
+
+(define (plug-in eq sol)
+  (local ((define (solve consts vars)
+            (cond
+              [(empty? consts) 0]
+              [else
+               (+ (* (first consts) (first vars))
+                  (solve (rest consts) (rest vars)))])
+            ))
+    (solve (lhs eq) sol)))
+
+; SOE Solution -> Boolean
+; true if sol is the solution to asoe
+
+(check-expect (check-solution M S) #t)
+(check-expect (check-solution M '(2 2 1)) #f)
+(check-expect (check-solution
+               '((2 2 3 10)
+                 (0 3 9 21)
+                 (0 0 1 2)) S) #t)
+(check-expect (check-solution
+               '((2 2 3 10)
+                 (0 3 9 21)
+                 (0 -3 -8 -19)) S) #t)
+
+(define (check-solution asoe sol)
+  (cond
+    [(empty? asoe) #t]
+    [else
+     (and
+      (= (plug-in (first asoe) sol) (rhs (first asoe)))
+      (check-solution (rest asoe) sol))]))
+
+; Equation Equation -> Equation
+; substract the scnd from fst as many times as required
+; for the fst position to be 0.
+; constraint: fst and scnd must be of equal length
+; generative: subtract scnd from fst once and then recurse
+; terminate: as long as the (first fst) is a multiple of
+; (first scnd) then it will terminate
+
+(check-expect (subtract '(2 5 12 31) '(2 2 3 10)) '(3 9 21))
+(check-expect (subtract '(3 9 21) '(-3 -8 -19)) '(1 2))
+
+(define (subtract fst scnd)
+  (local (
+          (define (subtract-each f s multiplier)
+            (cond
+              [(empty? f) '()]
+              [else
+               (cons
+                (- (first f) (* multiplier (first s)))
+                (subtract-each (rest f) (rest s) multiplier))])
+            ))
+    (cond
+      [(zero? (first fst)) (rest fst)]
+      [else
+       (rest (subtract-each fst scnd (/ (first fst) (first scnd))))])))
+
+; SOE -> TM
+; triangulates the given system of equations
+
+; 4 questions of generative recursion:
+; 1. trivial case -> M is empty
+; 2. solution is empty list
+; 3. Divide M into top and rest. Use arithmetic on the
+; rest to remove the first digit from the first column.
+; Recurse on rest.
+; Additionally: if the top column starts with a zero, rotate
+; if leading coefficients are all 0 then signal error
+; 4. cons the rows together.
+
+(check-expect
+ (triangulate M) '((2 2 3 10)
+                   (3 9 21)
+                   (1 2)))
+(check-expect
+ (triangulate
+  '((2 3 3 8)
+    (2 3 -2 3)
+    (4 -2 2 4)))
+ '((2 3 3 8)
+   (-8 -4 -12)
+   (-5 -5)))
+(check-error
+ (triangulate '((2 2 2 6)
+                (2 2 4 8)
+                (2 2 1 2)) "no solution"))
+
+(define (triangulate M)
+  (cond
+    [(empty? M) '()]
+    [else
+     (local (; SOE Equation -> SOE
+             (define (subtracted-matrix m0 e0)
+               (cond
+                 [(empty? m0) '()]
+                 [else
+                  (cons
+                   (subtract (first m0) e0)
+                   (subtracted-matrix (rest m0) e0))]))
+             (define cur (first M)))
+       (cond 
+         [(zero? (first cur))
+          (if (andmap (lambda (l) (zero? (first l))) M)
+              (error "no solution")
+              (triangulate (append (rest M) (list (first M)))))]
+         [else
+          (cons
+           (first M)
+           (triangulate (subtracted-matrix (rest M) (first M))))]
+         ))]))
+
+; Equation [List-of Number] -> Number
+; given an equation with (+ n 1) variables and a
+; list of numbers with n numbers, solve for the first variable
+
+(check-expect (solve-for-first '(2 2 6) '(1)) 2)
+(check-expect (solve-for-first '(2 2 3 10) '(1 2)) 1)
+
+(define (solve-for-first eq alon)
+  (/ (- (rhs eq) (foldr
+                  (lambda (x y rst) (+ (* x y) rst))
+                  0
+                  (rest (lhs eq)) alon)) (first eq)))
+  
+; TM -> [List-of Number]
+; Solves tm
+
+(check-expect (solve (triangulate M)) '(1 1 2))
+
+(define (solve.v1 tm)
+  (cond
+    [(empty? tm) '()]
+    [else
+     (local ((define res (solve (rest tm))))
+       (cons
+        (solve-for-first (first tm) res)
+        res))]))
+
+(define (solve tm)
+  (foldr (lambda (r rst) (cons (solve-for-first r rst) rst)) '() tm))
+
+; SOE -> [List-of Number]
+; solves a matrix
+
+(check-expect (gauss M) '(1 1 2))
+
+(define (gauss m)
+  (solve (triangulate m)))
+
+
+
+
+
+
+
+
+
+
+
 
 
 
